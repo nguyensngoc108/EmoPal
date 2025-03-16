@@ -1,0 +1,242 @@
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 150px);
+    padding: 20px;
+    background: #f9fafb;
+  }
+  
+  .auth-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+  }
+  
+  .auth-tabs {
+    display: flex;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .auth-tab {
+    flex: 1;
+    padding: 15px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #777;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .auth-tab.active {
+    font-weight: 600;
+    color: #4f70e8;
+    box-shadow: inset 0 -3px 0 #4f70e8;
+  }
+  
+  .auth-content {
+    padding: 30px;
+  }
+  
+  h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 24px;
+  }
+  
+  .auth-subtitle {
+    color: #777;
+    margin-bottom: 25px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border 0.3s;
+  }
+  
+  .form-group input:focus {
+    border-color: #4f70e8;
+    outline: none;
+  }
+  
+  .auth-button {
+    width: 100%;
+    padding: 14px;
+    background: #4f70e8;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .auth-button:hover {
+    background: #3a5ad9;
+  }
+  
+  .auth-button:disabled {
+    background: #a1aeeb;
+    cursor: not-allowed;
+  }
+  
+  .auth-error {
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+  }
+  
+  .auth-footer {
+    margin-top: 25px;
+    text-align: center;
+  }
+  
+  .auth-links {
+    margin-bottom: 15px;
+  }
+  
+  .auth-links a {
+    color: #4f70e8;
+    text-decoration: none;
+  }
+  
+  .auth-links a:hover {
+    text-decoration: underline;
+  }
+  
+  .auth-register {
+    color: #555;
+  }
+  
+  .auth-register a {
+    color: #4f70e8;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  
+  .auth-register a:hover {
+    text-decoration: underline;
+  }
+
+
+  /* Add these styles to your existing Auth.css file */
+
+/* Avatar upload styles */
+.avatar-upload-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
+  }
+  
+  .avatar-upload {
+    width: 120px;
+    height: 120px;
+    border-radius: 60px;
+    background-color: #f0f2f5;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    border: 2px dashed #ccd0d5;
+    transition: all 0.3s ease;
+  }
+  
+  .avatar-upload:hover {
+    border-color: #4f70e8;
+    background-color: #f5f7ff;
+  }
+  
+  .avatar-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #65676b;
+  }
+  
+  .upload-icon {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .remove-avatar-btn {
+    background: none;
+    border: none;
+    color: #4f70e8;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 5px;
+  }
+  
+  .remove-avatar-btn:hover {
+    text-decoration: underline;
+  }
+  
+  /* Address section styles */
+  .address-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+  
+  .address-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #333;
+  }
+  
+  /* Form textarea styles */
+  .form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border 0.3s;
+    resize: vertical;
+    font-family: inherit;
+  }
+  
+  .form-group textarea:focus {
+    border-color: #4f70e8;
+    outline: none;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .avatar-upload {
+      width: 100px;
+      height: 100px;
+    }
+  }

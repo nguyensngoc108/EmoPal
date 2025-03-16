@@ -1,0 +1,1235 @@
+/* Strict reset for video session page only */
+.video-session-page {
+  /* Reset margins and padding */
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: auto;
+  min-height: 100vh;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: #333;
+  position: relative;
+  overflow-y: auto; /* Allow vertical scrolling */
+  overflow-x: hidden;
+}
+
+/* Reset any interfering styles */
+.video-session-page div {
+  box-sizing: border-box;
+}
+
+/* Fix for any global styles that might be causing issues */
+body:has(.video-session-page) {
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Root container for video session to scope all styles */
+.video-session-page {
+  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Main container layouts with scoped selectors */
+.video-session-page .therapist-session-layout,
+.video-session-page .client-session-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: auto; /* Allow height to expand based on content */
+  background-color: #f9fafb;
+}
+
+/* Session header */
+.video-session-page .session-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+/* Continue scoping all selectors this way */
+.video-session-page .session-info { /* ...existing styles... */ }
+.video-session-page .main-content { /* ...existing styles... */ }
+.video-session-page .video-container { /* ...existing styles... */ }
+
+/* Video container - clean up unnecessary styling */
+.video-session-page .video-container {
+  position: relative;
+  flex: 1;
+  min-height: 500px; /* Ensure minimum height */
+  height: calc(100vh - 130px); /* More dynamic height calculation */
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+  /* Remove debug borders */
+}
+
+.video-session-page .remote-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #333;
+  z-index: 1;
+  overflow: hidden; /* Ensure content is contained */
+}
+
+.video-session-page .remote-video > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.video-session-page .local-video-container {
+  position: absolute;
+  bottom: 90px;
+  left: 20px; /* Position in the left corner */
+  z-index: 10; /* Higher than remote video but lower than controls */
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  width: auto; /* Let content determine width */
+  height: auto; /* Let content determine height */
+  padding: 0; /* Remove padding causing the extra space */
+}
+
+/* Add styles to make the self-view container work better */
+.local-video-container {
+  position: absolute;
+  bottom: 90px;
+  left: 20px;
+  width: auto;
+  height: auto;
+  z-index: 10; 
+  transition: all 0.2s ease-in-out;
+}
+
+/* Add a grab cursor to indicate draggable */
+.local-video-container:hover {
+  cursor: grab;
+}
+
+.local-video-container:active {
+  cursor: grabbing;
+}
+
+/* Fix any CSS specificity issues */
+.video-session-page .local-video-container {
+  position: absolute !important;
+  z-index: 10 !important;
+}
+
+.video-session-page .local-video {
+  width: 180px; /* Fixed width */
+  height: 135px; /* Fixed height preserving aspect ratio */
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #222;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  position: relative; /* Changed from absolute to relative */
+}
+
+/* Make the local video draggable for user preference */
+.video-session-page .local-video-container:hover {
+  cursor: move;
+  transform: scale(1.03);
+}
+
+/* Fix Agora video player inside local view */
+.video-session-page .local-video .agora_video_player,
+.video-session-page .local-video video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+/* Fix Agora video rendering with scoped selectors */
+.video-session-page .agora_video_player {
+  width: 100% !important;
+  height: 100% !important;
+  background-color: transparent !important;
+  position: relative !important;
+}
+
+.video-session-page .agora_video_player video {
+  object-fit: contain !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+/* Remove debug indicators */
+.video-session-page .connection-status {
+  display: none;
+}
+
+/* Main container layouts */
+.therapist-session-layout,
+.client-session-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: auto; /* Allow height to expand based on content */
+  background-color: #f9fafb;
+}
+
+/* Session header */
+.session-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+/* Session info styling */
+.session-info {
+  display: flex;
+  flex-direction: column;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.session-info-primary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.session-title {
+  display: flex;
+  align-items: center;
+}
+
+.session-title h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.session-badges {
+  display: flex;
+  margin-left: 12px;
+  gap: 8px;
+}
+
+.session-type-badge,
+.recording-badge,
+.time-badge {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.session-type-badge {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.recording-badge {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  display: flex;
+  align-items: center;
+}
+
+.recording-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #dc2626;
+  border-radius: 50%;
+  margin-right: 4px;
+  animation: pulse 2s infinite;
+}
+
+.time-badge {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.session-info-secondary {
+  margin-top: 4px;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.session-info-loading {
+  padding: 12px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.session-date {
+  margin-right: 6px;
+}
+
+/* Main content area */
+.main-content {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 70px);
+  height: auto; /* Allow expanding based on content */
+  overflow-y: visible; /* Allow content to scroll */
+}
+
+/* Video container */
+.video-container {
+  position: relative;
+  width: 100%;
+  min-height: 500px;
+  height: calc(100vh - 150px); /* Flexible height */
+  padding-bottom: 80px; /* Space for controls */
+  overflow: visible; /* Allow controls to be visible outside container */
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.remote-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #333;
+  z-index: 1;
+  overflow: hidden; /* Ensure content is contained */
+}
+
+.remote-video > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.local-video {
+  position: absolute;
+  width: 180px;
+  height: 135px;
+  right: 16px;
+  bottom: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #222;
+  z-index: 2;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+}
+
+.local-video > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Style for video elements created by Agora */
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Remove Agora's default element styling */
+.agora_video_player {
+  width: 100% !important;
+  height: 100% !important;
+  background-color: transparent !important;
+  position: relative !important;
+}
+
+.agora_video_player video {
+  object-fit: contain !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+.video-placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.25rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.video-placeholder svg {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+/* Video controls */
+.video-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100; /* Higher z-index to ensure visibility */
+  display: flex;
+  gap: 12px;
+  background-color: rgba(17, 24, 39, 0.7);
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  transition: all 0.3s ease;
+}
+
+.control-btn {
+  background-color: #4b5563;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  min-width: 110px;
+}
+
+.control-btn:hover {
+  background-color: #374151;
+  transform: translateY(-2px);
+}
+
+.control-btn.off {
+  background-color: #ef4444;
+}
+
+.control-btn.active {
+  background-color: #10b981;
+}
+
+.control-btn.leave {
+  background-color: #ef4444;
+}
+
+.control-btn.analysis {
+  background-color: #6366f1;
+}
+
+/* Side panel */
+.side-panel {
+  width: 350px;
+  height: auto; /* Let it adjust to content */
+  min-height: calc(100vh - 70px); /* Match main content */
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
+
+/* Therapist Insight Panel */
+.therapist-insight-panel {
+  display: flex;
+  flex-direction: column;
+  height: 50%;
+  border-bottom: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab {
+  padding: 6px 12px;
+  border-radius: 6px;
+  background-color: transparent;
+  color: #4b5563;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.tab.active {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  font-weight: 500;
+}
+
+.panel-content {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+/* Emotion chart styles */
+.emotion-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dominant-emotion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f3f4f6;
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+
+.emotion-badge {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.emotion-badge.happy {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.emotion-badge.sad {
+  background-color: #e0e7ff;
+  color: #4338ca;
+}
+
+.emotion-badge.angry {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.emotion-badge.fear {
+  background-color: #fce7f3;
+  color: #be185d;
+}
+
+.emotion-badge.surprise {
+  background-color: #fef9c3;
+  color: #a16207;
+}
+
+.emotion-badge.disgust {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.emotion-badge.neutral {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.emotion-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.emotion-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.emotion-name {
+  width: 70px;
+  font-size: 0.9rem;
+  color: #4b5563;
+  text-transform: capitalize;
+}
+
+.bar-container {
+  flex: 1;
+  height: 16px;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.bar.happy { background-color: #fcd34d; }
+.bar.sad { background-color: #93c5fd; }
+.bar.angry { background-color: #fca5a5; }
+.bar.fear { background-color: #f9a8d4; }
+.bar.surprise { background-color: #fef08a; }
+.bar.disgust { background-color: #6ee7b7; }
+.bar.neutral { background-color: #9ca3af; }
+
+.bar-value {
+  position: absolute;
+  right: 6px;
+  top: 0;
+  font-size: 0.8rem;
+  color: #111827;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+/* Warnings tab styles */
+.warnings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.warning-item {
+  display: flex;
+  padding: 12px;
+  background-color: #fff9db;
+  border-radius: 8px;
+  border-left: 4px solid #f59e0b;
+}
+
+.warning-message {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  color: #111827;
+}
+
+.warning-time {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Insights tab styles */
+.insights-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.insights-container h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.insights-container p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.insights-container ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.insights-container li {
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.current-state {
+  background-color: #f3f4f6;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.suggestions {
+  background-color: #f0fdf4;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #10b981;
+}
+
+.observation {
+  background-color: #eff6ff;
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+/* Empty state for panels */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Panel footer with metrics */
+.panel-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.metrics {
+  display: flex;
+  justify-content: space-around;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.metric-value.positive {
+  color: #10b981;
+}
+
+.metric-value.negative {
+  color: #ef4444;
+}
+
+/* Chat panel */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.chat-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty-chat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.message {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  position: relative;
+  word-break: break-word;
+}
+
+.message.sent {
+  align-self: flex-end;
+  background-color: #eff6ff;
+  border-bottom-right-radius: 4px;
+}
+
+.message.received {
+  align-self: flex-start;
+  background-color: #f3f4f6;
+  border-bottom-left-radius: 4px;
+}
+
+.message-content {
+  font-size: 0.95rem;
+  color: #111827;
+  line-height: 1.5;
+}
+
+.message-time {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.message-input-form {
+  display: flex;
+  padding: 12px 16px;
+  border-top: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
+
+.message-input-form input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  margin-right: 10px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.message-input-form input:focus {
+  border-color: #4d84e2;
+  box-shadow: 0 0 0 2px rgba(77, 132, 226, 0.1);
+}
+
+.message-input-form button {
+  padding: 0 20px;
+  background-color: #4d84e2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.message-input-form button:hover {
+  background-color: #3b7bd4;
+}
+
+.message-input-form button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-content h3 {
+  margin: 0 0 12px 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.modal-content p {
+  margin: 0 0 20px 0;
+  font-size: 1rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-cancel {
+  padding: 10px 16px;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-cancel:hover {
+  background-color: #e5e7eb;
+}
+
+.btn-end-session,
+.btn-leave-session {
+  padding: 10px 16px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-end-session:hover,
+.btn-leave-session:hover {
+  background-color: #dc2626;
+}
+
+/* Animation keyframes */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .local-video {
+    width: 180px;
+    height: 135px;
+    bottom: 100px;
+  }
+  
+  .side-panel {
+    width: 300px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+  }
+  
+  .side-panel {
+    width: 100%;
+    height: 40vh;
+  }
+  
+  .therapist-insight-panel {
+    height: 50%;
+  }
+  
+  .local-video {
+    width: 120px;
+    height: 90px;
+    bottom: 80px;
+    right: 10px;
+  }
+  
+  .video-controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .control-btn {
+    min-width: 90px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .local-video-container {
+    bottom: 80px;
+    left: 10px;
+  }
+  
+  .local-video {
+    width: 120px;
+    height: 90px;
+  }
+}
+
+/* VERY IMPORTANT: These overrides fix most rendering issues */
+.video-container div {
+  position: relative !important; 
+  overflow: hidden !important;
+}
+
+/* Add to your CSS file */
+.video-session-page .permission-dialog {
+  max-width: 450px;
+}
+
+.video-session-page .permission-content {
+  text-align: center;
+  padding: 10px 0 20px;
+}
+
+.video-session-page .permission-icons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  color: #4d84e2;
+}
+
+.video-session-page .permission-message {
+  font-size: 1rem;
+  margin-bottom: 16px;
+  color: #374151;
+}
+
+.video-session-page .permission-instructions {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 0;
+}
+
+.video-session-page .btn-primary {
+  padding: 10px 16px;
+  background-color: #4d84e2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.video-session-page .btn-primary:hover {
+  background-color: #3b7bd4;
+}
+
+/* Updated layout containers */
+.video-session-page .main-content {
+  display: flex;
+  flex: 1;
+  min-height: calc(100vh - 70px);
+  height: auto; /* Allow expanding based on content */
+  overflow: hidden;
+}
+
+/* Improved video container layout */
+.video-session-page .video-container {
+  position: relative;
+  flex: 1;
+  min-height: 500px; /* Ensure minimum height */
+  height: calc(100vh - 130px); /* More dynamic height calculation */
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Remote video takes most but not all of the space */
+.video-session-page .remote-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #333;
+  z-index: 1;
+}
+
+/* Significantly enlarged self-view */
+.video-session-page .local-video {
+  position: absolute;
+  width: 280px;  /* Much larger than before */
+  height: 210px; /* Maintain aspect ratio */
+  right: 20px;
+  bottom: 80px; /* Position above controls */
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #222;
+  z-index: 2;
+  border: 3px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+/* Make local video draggable and add hover effect */
+.video-session-page .local-video:hover {
+  transform: scale(1.03);
+  cursor: move;
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Side panel (chat) improvements */
+.video-session-page .side-panel {
+  width: 350px;
+  height: auto; /* Let it adjust to content */
+  min-height: calc(100vh - 70px); /* Match main content */
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
+  z-index: 5;
+  transition: transform 0.3s ease;
+}
+
+/* Improved video controls positioning */
+.video-session-page .video-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  background-color: rgba(17, 24, 39, 0.7);
+  padding: 14px 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+/* Add reconnect button styling */
+.video-session-page .reconnect-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(17, 24, 39, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* Add to the bottom of your file */
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .video-session-page .local-video {
+    width: 220px;
+    height: 165px;
+  }
+  
+  .video-session-page .side-panel {
+    width: 300px;
+  }
+}
+
+@media (max-width: 992px) {
+  .video-session-page .main-content {
+    flex-direction: column;
+    height: auto;
+  }
+  
+  .video-session-page .video-container {
+    height: 60vh; /* Use percentage of viewport height */
+    min-height: 400px; /* But ensure minimum height */
+  }
+  
+  .video-session-page .side-panel {
+    width: 100%;
+    min-height: 40vh; /* Use viewport height */
+    height: auto;
+    flex-direction: row;
+  }
+  
+  .video-session-page .local-video-container {
+    bottom: 80px;
+    left: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .video-session-page .local-video {
+    width: 130px;
+    height: 98px;
+    bottom: 80px;
+  }
+  
+  .video-session-page .video-controls {
+    padding: 10px 12px;
+  }
+  
+  .video-session-page .control-btn {
+    min-width: auto;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .video-session-page .video-container {
+    min-height: 350px;
+  }
+  
+  .video-session-page .local-video {
+    width: 100px;
+    height: 75px;
+  }
+  
+  .video-session-page .video-controls {
+    padding: 8px 10px;
+  }
+  
+  .video-session-page .side-panel {
+    flex-direction: column;
+    height: auto;
+    min-height: auto;
+  }
+  
+  .video-session-page .chat-panel,
+  .video-session-page .therapist-insight-panel {
+    width: 100%;
+    height: auto;
+    min-height: 250px;
+  }
+}

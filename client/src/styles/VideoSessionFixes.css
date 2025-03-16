@@ -1,0 +1,198 @@
+/* 1. LAYOUT CONTAINER FIXES */
+.video-session-page {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow-y: auto !important; /* Enable page scrolling */
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* Override body restrictions */
+body:has(.video-session-page) {
+  overflow: auto !important; /* Allow body scrolling */
+  height: auto !important;
+}
+
+/* Fix layout containers */
+.video-session-page .therapist-session-layout,
+.video-session-page .client-session-layout {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh;
+  height: auto !important; /* Allow expanding */
+  width: 100% !important;
+  max-width: none !important; /* Override App.css max-width */
+  margin: 0 !important;
+}
+
+/* Fix main content to allow proper layout */
+.video-session-page .main-content {
+  display: flex !important;
+  flex: 1 !important;
+  padding: 0 !important; /* Override App.css padding */
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: calc(100vh - 70px);
+  overflow: visible !important; /* Allow content to be visible */
+}
+
+/* 2. VIDEO CONTAINER FIXES */
+.video-session-page .video-container {
+  position: relative !important;
+  flex: 1 !important;
+  height: calc(100vh - 130px) !important;
+  min-height: 500px !important;
+  padding-bottom: 80px !important; /* Space for controls */
+  overflow: visible !important; /* Show controls outside container */
+}
+
+/* 3. CHAT PANEL FIXED HEIGHT WITH INTERNAL SCROLLING */
+.video-session-page .side-panel {
+  width: 350px !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border-left: 1px solid #e5e7eb !important;
+  overflow: hidden !important; /* Contain children's overflow */
+  max-height: calc(100vh - 70px) !important; /* Constrain height */
+}
+
+/* Fix chat panel layout */
+.video-session-page .chat-panel {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Make chat messages area scrollable but fixed height */
+.video-session-page .chat-messages {
+  flex: 1 !important;
+  overflow-y: auto !important; /* Enable scrolling within panel */
+  overflow-x: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 16px !important;
+  height: auto !important;
+  max-height: calc(100% - 110px) !important; /* Account for header and input */
+  scroll-behavior: smooth !important;
+}
+
+/* Prevent the message container from growing with content */
+.video-session-page .chat-panel .message-input-form {
+  flex-shrink: 0 !important;
+  position: relative !important;
+}
+
+/* Ensure messages start at the top and fill available space */
+.video-session-page .empty-chat {
+  margin-top: auto !important;
+  margin-bottom: auto !important;
+}
+
+/* Add scroll container class to prevent page scrolling */
+.video-session-page .scroll-container {
+  overflow: hidden !important;
+  height: 100% !important;
+}
+
+/* 4. LOCAL VIDEO CONTAINER FIXES */
+.video-session-page .local-video-container {
+  position: absolute !important;
+  z-index: 10 !important;
+  /* CRITICAL FIX: Remove the fixed bottom/left positions that prevent dragging */
+  /* bottom: 90px !important; - REMOVE THIS */
+  /* left: 20px !important; - REMOVE THIS */
+  margin: 0 !important;
+  padding: 0 !important;
+  cursor: grab !important;
+  touch-action: none !important;
+  /* Initial position - will be overridden by drag */
+  bottom: 90px; 
+  left: 20px;
+}
+
+.video-session-page .local-video-container:active {
+  cursor: grabbing !important;
+}
+
+.video-session-page .local-video {
+  width: 180px !important;
+  height: 135px !important;
+  border-radius: 8px !important;
+  background-color: #222 !important;
+  border: 2px solid rgba(255, 255, 255, 0.7) !important;
+  overflow: hidden !important;
+  /* CRITICAL FIX: Ensure video is centered and properly sized */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Fix how the video fits within the container */
+.video-session-page .local-video .agora_video_player,
+.video-session-page .local-video video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important; /* Makes video fill the container */
+  position: relative !important;
+}
+
+/* 5. CONTROLS VISIBILITY FIX */
+.video-session-page .video-controls {
+  position: absolute !important;
+  bottom: 20px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 100 !important;
+  padding: 12px 16px !important;
+}
+
+/* 6. RESPONSIVE LAYOUTS */
+@media (max-width: 992px) {
+  .video-session-page .main-content {
+    flex-direction: column !important;
+  }
+  
+  .video-session-page .side-panel {
+    width: 100% !important;
+    max-height: 40vh !important;
+    flex-direction: row !important;
+    border-top: 1px solid #e5e7eb !important;
+    border-left: none !important;
+  }
+  
+  .video-session-page .chat-panel,
+  .video-session-page .therapist-insight-panel {
+    flex: 1 !important;
+    width: 50% !important;
+    height: 100% !important;
+    border-left: 1px solid #e5e7eb !important;
+  }
+  
+  .video-session-page .chat-panel:first-child {
+    border-left: none !important;
+  }
+}
+
+/* Fix chat panel for mobile */
+@media (max-width: 576px) {
+  .video-session-page .side-panel {
+    flex-direction: column !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+  
+  .video-session-page .chat-panel,
+  .video-session-page .therapist-insight-panel {
+    width: 100% !important;
+    height: 300px !important; /* Fixed height on mobile */
+    border-left: none !important;
+    border-top: 1px solid #e5e7eb !important;
+  }
+}
