@@ -1,4 +1,3 @@
-cat > README.md << 'EOL'
 # EmoPal - AI Facial Emotion Recognition Therapy Platform
 
 EmoPal is a therapy platform that integrates real-time facial emotion recognition to enhance the therapeutic experience. It enables users to connect with therapists through video calls while analyzing emotional responses to provide insights.
