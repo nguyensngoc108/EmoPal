@@ -7,8 +7,12 @@ logger = logging.getLogger(__name__)
 def get_db_client():
     """Get MongoDB client with connection retry logic"""
     try:
-        # Get connection string from environment or use default
-        mongo_uri = os.environ.get('MONGO_URI', 'mongodb+srv://nguyensngoc12:65smbABwDralpSmf@individualserver.byohaww.mongodb.net/')
+        # Get connection string from environment or annouce error
+        if 'MONGO_URI' not in os.environ:
+            logger.error("MONGO_URI environment variable not set")
+            raise ValueError("MONGO_URI environment variable not set")
+        # MongoDB connection string
+        mongo_uri = os.environ.get('MONGO_URI')
         
         # Connect with appropriate timeouts and retry options
         client = MongoClient(
