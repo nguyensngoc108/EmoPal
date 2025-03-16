@@ -1,7 +1,8 @@
 import os
 from pymongo import MongoClient
 import logging
-
+from dotenv import load_dotenv
+load_dotenv()
 logger = logging.getLogger(__name__)
 
 def get_db_client():
