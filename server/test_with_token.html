@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Therapy Session Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: system-ui;
+      margin: 0;
+      padding: 20px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .main-container {
+      display: grid;
+      grid-template-columns: 3fr 1fr;
+      gap: 20px;
+      height: calc(100vh - 120px);
+    }
+    .video-container {
+      display: flex;
+      flex-direction: column;
+      background: #f5f5f5;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .video-area {
+      display: flex;
+      flex: 1;
+      position: relative;
+      min-height: 400px;
+    }
+    .video-placeholder {
+      background: #222;
+      color: #999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+    .local-video, .remote-video {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #222;
+    }
+    .local-video {
+      position: absolute;
+      width: 180px;
+      height: 120px;
+      bottom: 20px;
+      right: 20px;
+      z-index: 2;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      border: 2px solid white;
+    }
+    .remote-video {
+      flex: 1;
+    }
+    .controls {
+      display: flex;
+      padding: 15px;
+      background: #fff;
+      border-top: 1px solid #ddd;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      flex: 1;
+    }
+    .chat-header {
+      padding: 15px;
+      background: #f1f1f1;
+      border-bottom: 1px solid #ddd;
+    }
+    .chat-messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #fff;
+    }
+    .message {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+    .message.sent {
+      background: #dcf8c6;
+      align-self: flex-end;
+      margin-left: auto;
+    }
+    .message.received {
+      background: #f1f0f0;
+    }
+    .message-input {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+    }
+    .message-input input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      margin-right: 10px;
+    }
+    .connection-info {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+    .status {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+    .status.connected { background: #4CAF50; }
+    .status.disconnected { background: #F44336; }
+    button {
+      padding: 10px 16px;
+      background: #4d84e2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    button:hover {
+      background: #3a70c9;
+    }
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    button.danger {
+      background: #e25353;
+    }
+    button.danger:hover {
+      background: #c53e3e;
+    }
+    .toggle-btn {
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 8px 12px;
+      background: white;
+      color: #333;
+    }
+    .toggle-btn.active {
+      background: #4d84e2;
+      color: white;
+      border-color: #4d84e2;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .role-select {
+      margin-bottom: 15px;
+    }
+    .logs {
+      margin-top: 20px;
+      height: 120px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      background: #f1f1f1;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .log-item {
+      margin: 2px 0;
+    }
+    .error { color: #F44336; }
+    .success { color: #4CAF50; }
+    .warning { color: #FF9800; }
+    
+    /* Emotion Analysis Styles */
+    .emotion-container {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      max-height: 400px;
+    }
+    .emotion-header {
+      padding: 10px 15px;
+      background: #f1f1f1;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .emotion-content {
+      padding: 15px;
+      overflow-y: auto;
+      background: #fff;
+      flex: 1;
+    }
+    .emotion-warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .emotion-warning.active {
+      display: block;
+    }
+    .emotion-metric {
+      margin-bottom: 10px;
+    }
+    .emotion-label {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .emotion-value {
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 2px;
+    }
+    .emotion-value-bar {
+      height: 100%;
+      background: #4d84e2;
+      width: 0;
+      transition: width 0.3s ease-in-out;
+    }
+    .emotion-value-text {
+      font-size: 12px;
+      color: #666;
+    }
+    .emotion-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    .emotion-stat {
+      text-align: center;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 10px;
+      flex: 1;
+      margin: 0 4px;
+    }
+    .emotion-stat-value {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .emotion-stat-label {
+      font-size: 12px;
+      color: #666;
+    }
+    .emotion-chart-container {
+      height: 200px;
+      margin-top: 15px;
+    }
+    .tab-container {
+      display: flex;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 15px;
+    }
+    .tab {
+      padding: 8px 15px;
+      cursor: pointer;
+    }
+    .tab.active {
+      border-bottom: 3px solid #4d84e2;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .session-summary {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      display: none;
+    }
+    .session-summary h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    .summary-section {
+      margin-bottom: 15px;
+    }
+    .emotion-frame-capture {
+      margin-left: auto;
+    }
+  </style>
+  <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.15.0.js"></script>
+</head>
+<body>
+  <h1>Therapy Session Test</h1>
+  <p>Open this in two separate browser tabs to simulate both therapist and client sides of the session.</p>
+  
+  <div class="connection-info">
+    <div class="role-select">
+      <label><input type="radio" name="role" value="client" checked> Join as Client</label>
+      <label><input type="radio" name="role" value="therapist"> Join as Therapist</label>
+    </div>
+    
+    <div class="input-group">
+      <label>App ID:</label>
+      <input type="text" id="appid" value="79d73caf1b904f0587fee4d5e3e19084">
+    </div>
+    
+    <div class="input-group">
+      <label>Session ID:</label>
+      <input type="text" id="session-id" value="67ca6af136625c00195a4b58">
+    </div>
+    
+    <div class="input-row" style="display:flex; gap:20px;">
+      <div class="input-group" style="flex:1;">
+        <label>Client ID:</label>
+        <input type="text" id="client-id" value="67ca13831faf35fce663d950">
+      </div>
+      
+      <div class="input-group" style="flex:1;">
+        <label>Therapist ID:</label>
+        <input type="text" id="therapist-id" value="67ca14dab835b32d67b60374">
+      </div>
+    </div>
+    
+    <div style="margin-top: 15px;">
+      <span id="connection-status" class="status disconnected"></span>
+      <span id="connection-text">Not connected</span>
+      <div style="float:right;">
+        <button id="connect-btn">Connect</button>
+        <button id="disconnect-btn" disabled>Disconnect</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="main-container">
+    <div class="video-container">
+      <div class="video-area">
+        <div id="remote-video-placeholder" class="video-placeholder">
+          Waiting for the other participant to join...
+        </div>
+        <div id="remote-video" class="remote-video"></div>
+        <div id="local-video" class="local-video"></div>
+        <!-- Hidden canvas for image capture -->
+        <canvas id="captureCanvas" width="640" height="480" style="display:none;"></canvas>
+      </div>
+      <div class="controls">
+        <button id="camera-btn" class="toggle-btn active">Camera On</button>
+        <button id="mic-btn" class="toggle-btn active">Mic On</button>
+        <button id="screen-btn" class="toggle-btn">Share Screen</button>
+        
+        <!-- Emotion analysis controls -->
+        <div class="emotion-frame-capture" id="therapist-controls" style="display:none;">
+          <button id="analyze-btn" class="toggle-btn">Start Analysis</button>
+        </div>
+        
+        <div style="flex:1;"></div>
+        <button id="leave-btn" class="danger" disabled>Leave Session</button>
+      </div>
+    </div>
+    
+    <div class="side-panel">
+      <!-- Emotion Analysis Panel (Only shown for therapist) -->
+      <div id="emotion-panel" class="emotion-container" style="display:none;">
+        <div class="emotion-header">
+          <h3 style="margin:0;">Emotion Analysis</h3>
+          <div id="analysis-status">Idle</div>
+        </div>
+        
+        <div class="tab-container">
+          <div class="tab active" data-tab="realtime">Real-time</div>
+          <div class="tab" data-tab="trends">Trends</div>
+          <div class="tab" data-tab="insights">Insights</div>
+        </div>
+        
+        <div class="emotion-content">
+          <!-- Warning alerts -->
+          <div id="emotion-warning" class="emotion-warning">
+            Warning: High emotional distress detected
+          </div>
+          
+          <!-- Realtime tab -->
+          <div id="realtime-tab" class="tab-content active">
+            <!-- Dominant emotion -->
+            <div class="emotion-info">
+              <div class="emotion-stat">
+                <div class="emotion-stat-value" id="dominant-emotion">-</div>
+                <div class="emotion-stat-label">Dominant</div>
+              </div>
+              <div class="emotion-stat">
+                <div class="emotion-stat-value" id="valence-value">0</div>
+                <div class="emotion-stat-label">Valence</div>
+              </div>
+              <div class="emotion-stat">
+                <div class="emotion-stat-value" id="engagement-value">0</div>
+                <div class="emotion-stat-label">Engagement</div>
+              </div>
+            </div>
+            
+            <!-- Emotion bars -->
+            <div class="emotion-metric">
+              <div class="emotion-label">Happy</div>
+              <div class="emotion-value">
+                <div class="emotion-value-bar" id="emotion-happy" style="background:#4CAF50;"></div>
+              </div>
+              <div class="emotion-value-text" id="emotion-happy-text">0%</div>
+            </div>
+            
+            <div class="emotion-metric">
+              <div class="emotion-label">Sad</div>
+              <div class="emotion-value">
+                <div class="emotion-value-bar" id="emotion-sad" style="background:#2196F3;"></div>
+              </div>
+              <div class="emotion-value-text" id="emotion-sad-text">0%</div>
+            </div>
+            
+            <div class="emotion-metric">
+              <div class="emotion-label">Angry</div>
+              <div class="emotion-value">
+                <div class="emotion-value-bar" id="emotion-angry" style="background:#F44336;"></div>
+              </div>
+              <div class="emotion-value-text" id="emotion-angry-text">0%</div>
+            </div>
+            
+            <div class="emotion-metric">
+              <div class="emotion-label">Fear</div>
+              <div class="emotion-value">
+                <div class="emotion-value-bar" id="emotion-fear" style="background:#FF9800;"></div>
+              </div>
+              <div class="emotion-value-text" id="emotion-fear-text">0%</div>
+            </div>
+            
+            <div class="emotion-metric">
+              <div class="emotion-label">Neutral</div>
+              <div class="emotion-value">
+                <div class="emotion-value-bar" id="emotion-neutral" style="background:#9E9E9E;"></div>
+              </div>
+              <div class="emotion-value-text" id="emotion-neutral-text">0%</div>
+            </div>
+            
+            <div class="emotion-metric">
+              <div class="emotion-label">Surprise</div>
+              <div class="emotion-value">
+                <div class="emotion-value-bar" id="emotion-surprise" style="background:#9C27B0;"></div>
+              </div>
+              <div class="emotion-value-text" id="emotion-surprise-text">0%</div>
+            </div>
+            
+            <div class="emotion-metric">
+              <div class="emotion-label">Disgust</div>
+              <div class="emotion-value">
+                <div class="emotion-value-bar" id="emotion-disgust" style="background:#795548;"></div>
+              </div>
+              <div class="emotion-value-text" id="emotion-disgust-text">0%</div>
+            </div>
+          </div>
+          
+          <!-- Trends tab -->
+          <div id="trends-tab" class="tab-content">
+            <div class="emotion-info">
+              <div class="emotion-stat">
+                <div class="emotion-stat-value" id="stability-value">-</div>
+                <div class="emotion-stat-label">Stability</div>
+              </div>
+              <div class="emotion-stat">
+                <div class="emotion-stat-value" id="mood-value">-</div>
+                <div class="emotion-stat-label">Mood</div>
+              </div>
+              <div class="emotion-stat">
+                <div class="emotion-stat-value" id="shifts-value">0</div>
+                <div class="emotion-stat-label">Shifts</div>
+              </div>
+            </div>
+            
+            <div class="emotion-chart-container">
+              <canvas id="emotion-chart"></canvas>
+            </div>
+          </div>
+          
+          <!-- Insights tab -->
+          <div id="insights-tab" class="tab-content">
+            <div class="emotion-label">Current State:</div>
+            <p id="current-state">Patient appears calm and neutral.</p>
+            
+            <div class="emotion-label">Therapeutic Suggestions:</div>
+            <ul id="suggestions-list">
+              <li>Waiting for analysis...</li>
+            </ul>
+            
+            <div class="emotion-label">Observation:</div>
+            <p id="observation">No significant patterns detected yet.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="chat-container">
+        <div class="chat-header">
+          <h3 style="margin:0;">Chat</h3>
+        </div>
+        <div id="chat-messages" class="chat-messages">
+          <div class="message received">
+            <div style="font-weight:bold;">System</div>
+            <div>Welcome to the therapy session. Chat messages will appear here.</div>
+          </div>
+        </div>
+        <div class="message-input">
+          <input type="text" id="message-input" placeholder="Type a message...">
+          <button id="send-btn">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Session Summary (hidden initially) -->
+  <div id="session-summary" class="session-summary">
+    <h3>Session Summary</h3>
+    <div class="summary-section">
+      <h4>Overview</h4>
+      <p id="summary-text"></p>
+    </div>
+    
+    <div class="summary-section">
+      <h4>Emotional Analysis</h4>
+      <div id="summary-emotions"></div>
+    </div>
+    
+    <div class="summary-section">
+      <h4>Therapeutic Suggestions</h4>
+      <ul id="summary-suggestions"></ul>
+    </div>
+  </div>
+  
+  <div class="logs">
+    <div class="log-item">System: Ready to connect</div>
+  </div>
+  
+  <script>
+    // DOM Elements
+    const clientRadio = document.querySelector('input[value="client"]');
+    const therapistRadio = document.querySelector('input[value="therapist"]');
+    const appIdInput = document.getElementById('appid');
+    const sessionIdInput = document.getElementById('session-id');
+    const clientIdInput = document.getElementById('client-id');
+    const therapistIdInput = document.getElementById('therapist-id');
+    const connectBtn = document.getElementById('connect-btn');
+    const disconnectBtn = document.getElementById('disconnect-btn');
+    const leaveBtn = document.getElementById('leave-btn');
+    const connectionStatus = document.getElementById('connection-status');
+    const connectionText = document.getElementById('connection-text');
+    const cameraBtn = document.getElementById('camera-btn');
+    const micBtn = document.getElementById('mic-btn');
+    const screenBtn = document.getElementById('screen-btn');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const therapistControls = document.getElementById('therapist-controls');
+    const messageInput = document.getElementById('message-input');
+    const sendBtn = document.getElementById('send-btn');
+    const chatMessages = document.getElementById('chat-messages');
+    const remoteVideo = document.getElementById('remote-video');
+    const localVideo = document.getElementById('local-video');
+    const remoteVideoPlaceholder = document.getElementById('remote-video-placeholder');
+    const logsContainer = document.querySelector('.logs');
+    const captureCanvas = document.getElementById('captureCanvas');
+    const emotionPanel = document.getElementById('emotion-panel');
+    const analysisStatus = document.getElementById('analysis-status');
+    const sessionSummary = document.getElementById('session-summary');
+    
+    // State
+    let ws = null;
+    let agoraClient = null;
+    let localAudioTrack = null;
+    let localVideoTrack = null;
+    let screenTrack = null;
+    let remoteUser = null;
+    let isConnected = false;
+    let token = null;
+    let channel = null;
+    let uid = null;
+    let appId = null;
+    let isSharing = false;
+    let userRole = 'client';
+    let isAnalyzing = false;
+    let captureInterval = null;
+    let emotionChart = null;
+    
+    // Tab functionality
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        // Remove active class from all tabs
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        // Add active class to clicked tab
+        tab.classList.add('active');
+        document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+      });
+    });
+    
+    // Utils
+    function log(message, type = 'info') {
+      const logItem = document.createElement('div');
+      logItem.className = `log-item ${type}`;
+      logItem.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+      logsContainer.appendChild(logItem);
+      logsContainer.scrollTop = logsContainer.scrollHeight;
+    }
+    
+    function addMessage(text, isSent = true) {
+      const message = document.createElement('div');
+      message.className = `message ${isSent ? 'sent' : 'received'}`;
+      
+      const sender = document.createElement('div');
+      sender.style.fontWeight = 'bold';
+      sender.textContent = isSent ? (userRole === 'client' ? 'Client' : 'Therapist') : 
+                                    (userRole === 'client' ? 'Therapist' : 'Client');
+      
+      const content = document.createElement('div');
+      content.textContent = text;
+      
+      message.appendChild(sender);
+      message.appendChild(content);
+      chatMessages.appendChild(message);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Emotion analysis functions
+    function captureVideoFrame() {
+      if (!localVideoTrack || !isAnalyzing) return;
+      
+      try {
+        // Get video element
+        const videoEl = localVideo.querySelector('video');
+        if (!videoEl) return;
+        
+        // Set canvas dimensions
+        const ctx = captureCanvas.getContext('2d');
+        captureCanvas.width = videoEl.videoWidth;
+        captureCanvas.height = videoEl.videoHeight;
+        
+        // Draw video frame to canvas
+        ctx.drawImage(videoEl, 0, 0, captureCanvas.width, captureCanvas.height);
+        
+        // Convert to base64
+        const imageData = captureCanvas.toDataURL('image/jpeg', 0.8);
+        
+        // Send to server for analysis
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: 'video_frame',
+            frame: imageData
+          }));
+        }
+      } catch (error) {
+        log(`Error capturing frame: ${error.message}`, 'error');
+      }
+    }
+    
+    function startAnalysis() {
+      if (!isConnected) return;
+      
+      isAnalyzing = true;
+      analyzeBtn.textContent = 'Stop Analysis';
+      analyzeBtn.classList.add('active');
+      analysisStatus.textContent = 'Analyzing';
+      
+      // Start capturing frames
+      captureInterval = setInterval(captureVideoFrame, 200); // Capture every 200ms
+      log('Started emotion analysis');
+    }
+    
+    function stopAnalysis() {
+      isAnalyzing = false;
+      analyzeBtn.textContent = 'Start Analysis';
+      analyzeBtn.classList.remove('active');
+      analysisStatus.textContent = 'Idle';
+      
+      if (captureInterval) {
+        clearInterval(captureInterval);
+        captureInterval = null;
+      }
+      
+      log('Stopped emotion analysis');
+    }
+    
+    function updateEmotionUI(emotions, dominantEmotion, valence, engagement) {
+      // Update values
+      document.getElementById('dominant-emotion').textContent = dominantEmotion;
+      document.getElementById('valence-value').textContent = (valence * 100).toFixed(0) + '%';
+      document.getElementById('engagement-value').textContent = engagement.toFixed(0) + '%';
+      
+      // Update emotion bars
+      for (const emotion in emotions) {
+        const value = emotions[emotion] * 100;
+        const bar = document.getElementById(`emotion-${emotion}`);
+        const text = document.getElementById(`emotion-${emotion}-text`);
+        
+        if (bar) bar.style.width = `${value}%`;
+        if (text) text.textContent = `${value.toFixed(1)}%`;
+      }
+    }
+    
+    function updateTrendUI(trendAnalysis) {
+      if (!trendAnalysis) return;
+      
+      // Update trend stats
+      const stability = (trendAnalysis.emotional_stability * 100).toFixed(0) + '%';
+      document.getElementById('stability-value').textContent = stability;
+      document.getElementById('mood-value').textContent = trendAnalysis.mood_progression || '-';
+      document.getElementById('shifts-value').textContent = trendAnalysis.emotional_shifts || '0';
+      
+      // Update chart if it exists
+      if (emotionChart && trendAnalysis.dominant_emotions) {
+        // Update chart data
+        // (This is simplified - a real implementation would track over time)
+        const labels = [];
+        const data = [];
+        trendAnalysis.dominant_emotions.forEach(item => {
+          if (item && item.length === 2) {
+            labels.push(item[0]);
+            data.push(item[1] * 100);
+          }
+        });
+        
+        emotionChart.data.labels = labels;
+        emotionChart.data.datasets[0].data = data;
+        emotionChart.update();
+      }
+    }
+    
+    function updateInsightsUI(insightData) {
+      if (!insightData) return;
+      
+      // Update current state
+      const currentState = document.getElementById('current-state');
+      if (insightData.current_state) {
+        currentState.textContent = insightData.current_state;
+      }
+      
+      // Update suggestions
+      const suggestionsList = document.getElementById('suggestions-list');
+      if (insightData.suggestions && insightData.suggestions.length > 0) {
+        suggestionsList.innerHTML = ''; // Clear list
+        insightData.suggestions.forEach(suggestion => {
+          const li = document.createElement('li');
+          li.textContent = suggestion;
+          suggestionsList.appendChild(li);
+        });
+      }
+      
+      // Update observation
+      const observation = document.getElementById('observation');
+      if (insightData.observation) {
+        observation.textContent = insightData.observation;
+      }
+    }
+    
+    function showWarning(message) {
+      const warning = document.getElementById('emotion-warning');
+      warning.textContent = message;
+      warning.classList.add('active');
+      
+      // Hide after 10 seconds
+      setTimeout(() => {
+        warning.classList.remove('active');
+      }, 10000);
+    }
+    
+    function displaySessionSummary(summary) {
+      if (!summary) return;
+      
+      // Display the summary container
+      sessionSummary.style.display = 'block';
+      
+      // Populate overview text
+      const summaryText = document.getElementById('summary-text');
+      summaryText.textContent = summary.summary_text || 'No summary available';
+      
+      // Populate emotional analysis section
+      const summaryEmotions = document.getElementById('summary-emotions');
+      if (summary.emotional_analysis) {
+        const analysis = summary.emotional_analysis;
+        
+        // Create dominant emotions display
+        let emotionsHTML = '<div class="emotion-info">';
+        if (analysis.dominant_emotions && analysis.dominant_emotions.length > 0) {
+          analysis.dominant_emotions.forEach(([emotion, value]) => {
+            const percentage = (value * 100).toFixed(1);
+            emotionsHTML += `
+              <div class="emotion-stat">
+                <div class="emotion-stat-value">${emotion}</div>
+                <div class="emotion-stat-value">${percentage}%</div>
+              </div>
+            `;
+          });
+        }
+        emotionsHTML += '</div>';
+        
+        // Add stability and mood info
+        emotionsHTML += `
+          <div class="emotion-metric">
+            <div class="emotion-label">Emotional Stability</div>
+            <div class="emotion-value">
+              <div class="emotion-value-bar" style="width:${analysis.emotional_stability * 100}%; background:#4CAF50;"></div>
+            </div>
+            <div class="emotion-value-text">${(analysis.emotional_stability * 100).toFixed(1)}%</div>
+          </div>
+          
+          <div class="emotion-metric">
+            <div class="emotion-label">Mood Progression</div>
+            <div class="emotion-value-text">${analysis.mood_progression || 'Neutral'}</div>
+          </div>
+          
+          <div class="emotion-metric">
+            <div class="emotion-label">Engagement Level</div>
+            <div class="emotion-value-text">${analysis.engagement_level || 'Moderate'}</div>
+          </div>
+          
+          <div class="emotion-metric">
+            <div class="emotion-label">Emotional Shifts</div>
+            <div class="emotion-value-text">${analysis.emotional_shifts || 0} significant changes</div>
+          </div>
+        `;
+        
+        summaryEmotions.innerHTML = emotionsHTML;
+      } else {
+        summaryEmotions.innerHTML = '<p>No emotional analysis data available</p>';
+      }
+      
+      // Populate therapeutic suggestions
+      const suggestionsList = document.getElementById('summary-suggestions');
+      suggestionsList.innerHTML = '';
+      
+      if (summary.therapeutic_suggestions && summary.therapeutic_suggestions.length > 0) {
+        summary.therapeutic_suggestions.forEach(suggestion => {
+          const li = document.createElement('li');
+          
+          if (typeof suggestion === 'string') {
+            li.textContent = suggestion;
+          } else {
+            // Handle complex suggestion object
+            li.innerHTML = `<strong>${suggestion.focus || 'Suggestion'}:</strong> ${suggestion.description || ''}`;
+            
+            if (suggestion.techniques && suggestion.techniques.length > 0) {
+              const techniquesList = document.createElement('ul');
+              suggestion.techniques.forEach(technique => {
+                const techItem = document.createElement('li');
+                techItem.textContent = technique;
+                techniquesList.appendChild(techItem);
+              });
+              li.appendChild(techniquesList);
+            }
+          }
+          
+          suggestionsList.appendChild(li);
+        });
+      } else {
+        const li = document.createElement('li');
+        li.textContent = 'No therapeutic suggestions available';
+        suggestionsList.appendChild(li);
+      }
+      
+      // Add close button if it doesn't exist
+      if (!document.getElementById('close-summary-btn')) {
+        const closeBtn = document.createElement('button');
+        closeBtn.id = 'close-summary-btn';
+        closeBtn.textContent = 'Close Summary';
+        closeBtn.onclick = () => { sessionSummary.style.display = 'none'; };
+        sessionSummary.appendChild(closeBtn);
+      }
+      
+      // Scroll to summary
+      sessionSummary.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Initialize emotion chart 
+    function initEmotionChart() {
+      const ctx = document.getElementById('emotion-chart').getContext('2d');
+      emotionChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Happy', 'Sad', 'Angry', 'Fear', 'Neutral', 'Surprise', 'Disgust'],
+          datasets: [{
+            label: 'Emotion Intensity',
+            data: [0, 0, 0, 0, 0, 0, 0],
+            backgroundColor: [
+              '#4CAF50', // happy
+              '#2196F3', // sad
+              '#F44336', // angry
+              '#FF9800', // fear
+              '#9E9E9E', // neutral
+              '#9C27B0', // surprise
+              '#795548'  // disgust
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+      
+      return emotionChart;
+    }
+
+    // WebSocket message handler - ADD THIS to the existing script
+    function handleWebSocketMessage(event) {
+      try {
+        const data = JSON.parse(event.data);
+        log(`Received message: ${data.type}`);
+        
+        switch (data.type) {
+          case 'connection_established':
+            connectionStatus.className = 'status connected';
+            connectionText.textContent = 'Connected';
+            isConnected = true;
+            disconnectBtn.disabled = false;
+            leaveBtn.disabled = false;
+            
+            // Show emotion panel for therapist
+            if (userRole === 'therapist') {
+              emotionPanel.style.display = 'flex';
+              therapistControls.style.display = 'block';
+              
+              // Initialize emotion chart if not already done
+              if (!emotionChart) {
+                emotionChart = initEmotionChart();
+              }
+            }
+            break;
+            
+          case 'agora_token':
+            log('Received Agora token');
+            joinAgoraChannel(data.appId, data.channel, data.token, data.uid);
+            break;
+            
+          case 'chat_message':
+            addMessage(data.message, data.sender_id === (userRole === 'client' ? clientIdInput.value : therapistIdInput.value));
+            break;
+            
+          case 'emotion_update':
+            if (userRole === 'therapist' && data.data) {
+              updateEmotionUI(
+                data.data.emotions, 
+                data.data.dominant_emotion, 
+                data.data.valence, 
+                data.data.engagement
+              );
+            }
+            break;
+            
+          case 'emotion_trend_update':
+            if (userRole === 'therapist' && data.trend_analysis) {
+              updateTrendUI(data.trend_analysis);
+            }
+            break;
+            
+          case 'emotion_warning':
+            if (userRole === 'therapist' && data.warning) {
+              showWarning(data.warning);
+            }
+            break;
+            
+          case 'session_summary':
+            if (userRole === 'therapist' && data.summary) {
+              displaySessionSummary(data.summary);
+              log('Session ended, summary received');
+            }
+            break;
+            
+          case 'error':
+            log(`Error: ${data.message}`, 'error');
+            break;
+            
+          case 'pong':
+            // Handle keepalive ping response
+            break;
+            
+          default:
+            log(`Unhandled message type: ${data.type}`);
+        }
+      } catch (error) {
+        log(`Error processing message: ${error.message}`, 'error');
+      }
+    }
+
+    async function joinAgoraChannel(appId, channelName, token, uid) {
+      try {
+        log(`Joining Agora channel: ${channelName}`, 'info');
+        
+        if (!AgoraRTC) {
+          log('Agora RTC SDK not loaded', 'error');
+          return;
+        }
+        
+        // Create Agora client
+        agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+        
+        // Just log events instead of implementing full video
+        agoraClient.on('user-published', () => log('Remote user published a stream'));
+        agoraClient.on('user-unpublished', () => log('Remote user unpublished'));
+        
+        // Join the channel (for testing, we don't need full implementation)
+        await agoraClient.join(appId, channelName, token, uid);
+        log('Joined Agora channel successfully', 'success');
+        
+        // For testing purposes, we'll skip the actual video implementation
+        log('Video functionality disabled for testing');
+        
+        // Update connection status to show we're connected
+        connectionStatus.className = 'status connected';
+        connectionText.textContent = 'Connected to video';
+      } catch (error) {
+        log(`Failed to join Agora channel: ${error.message}`, 'error');
+      }
+    }
+    
+    // Add a stub for stopping the Agora stream
+    function stopAgoraStream() {
+      if (agoraClient) {
+        try {
+          agoraClient.leave();
+          log('Left Agora channel', 'info');
+        } catch (e) {
+          log(`Error leaving Agora channel: ${e.message}`, 'error');
+        }
+      }
+    }
+    
+    // Connect to WebSocket function - UPDATE this in your existing code
+    function connectWebSocket() {
+      // Get form values
+      userRole = clientRadio.checked ? 'client' : 'therapist';
+      const sessionId = sessionIdInput.value.trim();
+      const userId = userRole === 'client' ? clientIdInput.value.trim() : therapistIdInput.value.trim();
+      appId = appIdInput.value.trim();
+      
+      // Validate
+      if (!sessionId || !userId) {
+        log('Session ID and User ID are required', 'error');
+        return;
+      }
+      
+      // Build WebSocket URL
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const serverUrl = "localhost:8001"; // Hardcoded server URL for testing
+      const wsUrl = `${protocol}//${serverUrl}/ws/video/${sessionId}/${userId}/`;
+
+      log(`Connecting to ${wsUrl}...`);
+
+      
+      // Create WebSocket
+      try {
+        ws = new WebSocket(wsUrl);
+        
+        ws.onopen = () => {
+          log('WebSocket connection established', 'success');
+          connectBtn.disabled = true;
+          
+          // Request token for video chat
+          ws.send(JSON.stringify({
+            type: 'agora_token_request'
+          }));
+        };
+        
+        ws.onmessage = function(event) {
+          handleWebSocketMessage(event);
+        };
+        
+        ws.onclose = (event) => {
+          log(`WebSocket disconnected: ${event.code} ${event.reason}`, 'error');
+          connectionStatus.className = 'status disconnected';
+          connectionText.textContent = 'Disconnected';
+          isConnected = false;
+          disconnectBtn.disabled = true;
+          leaveBtn.disabled = true;
+          connectBtn.disabled = false;
+          
+          // Stop everything
+          stopAgoraStream();
+          stopAnalysis();
+          
+          // Hide emotion panel
+          emotionPanel.style.display = 'none';
+          therapistControls.style.display = 'none';
+        };
+        
+        ws.onerror = (error) => {
+          log('WebSocket error', 'error');
+          console.error('WebSocket error:', error);
+        };
+      } catch (error) {
+        log(`WebSocket connection error: ${error.message}`, 'error');
+      }
+    }
+    // Add this at the end of your script section
+
+// Enhanced Connection Debug
+  function testConnection() {
+    // Show connection details
+    log("DEBUG: Testing connection parameters...");
+    
+    // Get current values
+    const sessionId = sessionIdInput.value.trim();
+    const userId = userRole === 'client' ? clientIdInput.value.trim() : therapistIdInput.value.trim();
+    
+    // Check values
+    log(`DEBUG: Session ID = "${sessionId}"`);
+    log(`DEBUG: User ID = "${userId}"`);
+    log(`DEBUG: User Role = "${userRole}"`);
+    log(`DEBUG: App ID = "${appIdInput.value}"`);
+    
+    // Build WebSocket URL
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.host;
+    const wsUrl = `${protocol}//${host}/ws/video/${sessionId}/${userId}/`;
+    log(`DEBUG: Will connect to: ${wsUrl}`);
+    
+    // Test WebSocket connection manually
+    try {
+      log("DEBUG: Creating test WebSocket...");
+      const testWs = new WebSocket(wsUrl);
+      
+      testWs.onopen = () => {
+        log("✅ DEBUG: Test WebSocket connection successful!", "success");
+        testWs.close();
+      };
+      
+      testWs.onerror = (error) => {
+        log("❌ DEBUG: Test WebSocket error - see browser console", "error");
+        console.error("WebSocket test error:", error);
+        
+        // Check if server is running
+        fetch('/').then(response => {
+          log(`✅ Server is running - HTTP ${response.status}`, "success");
+        }).catch(err => {
+          log(`❌ Server is not responding to HTTP: ${err.message}`, "error");
+        });
+      };
+      
+      testWs.onclose = (event) => {
+        log(`DEBUG: Test WebSocket closed: code=${event.code}, reason=${event.reason || 'none'}`);
+      };
+    } catch (error) {
+      log(`❌ DEBUG: Failed to create WebSocket: ${error.message}`, "error");
+    }
+  }
+
+  // Add test button to connection section
+  const testBtn = document.createElement('button');
+  testBtn.textContent = "Test Connection";
+  testBtn.onclick = testConnection;
+  testBtn.style.marginLeft = '10px';
+  testBtn.style.backgroundColor = '#f39c12';
+  connectBtn.parentNode.appendChild(testBtn);
+
+  // Improved connect function with more error handling
+  const originalConnectWs = connectWebSocket;
+  connectWebSocket = function() {
+    log("Attempting connection with enhanced error handling...");
+    try {
+      originalConnectWs();
+    } catch(e) {
+      log(`CONNECTION ERROR: ${e.message}`, "error");
+      console.error("Connection error details:", e);
+    }
+    
+    // Set timeout to check connection status
+    setTimeout(() => {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        log("❌ WebSocket not connected after timeout - see console for debug info", "error");
+        console.log("WebSocket state:", ws ? ws.readyState : "not created");
+      }
+    }, 5000);
+  };
+
+  // Log WebSocket ready state
+  setInterval(() => {
+    if (ws) {
+      const states = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];
+      console.log(`WebSocket state: ${states[ws.readyState]}`);
+    }
+  }, 5000);
+
+    // After the test ends - Send a ping periodically to keep the connection alive
+    function setupKeepAlive() {
+      setInterval(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: 'ping'
+          }));
+        }
+      }, 30000); // Send ping every 30 seconds
+    }
+    
+    // Call setupKeepAlive after connecting
+    connectBtn.addEventListener('click', () => {
+      connectWebSocket();
+      setupKeepAlive();
+    });
+
+    // Add event listeners for the UI components - ADD THESE if they don't exist
+    analyzeBtn.addEventListener('click', () => {
+      if (isAnalyzing) {
+        stopAnalysis();
+      } else {
+        startAnalysis();
+      }
+    });
+    
+    sendBtn.addEventListener('click', () => {
+      const message = messageInput.value.trim();
+      if (message && ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'chat_message',
+          message: message,
+          message_type: 'text'
+        }));
+        
+        messageInput.value = '';
+      }
+    });
+    
+    // Send message when Enter is pressed
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendBtn.click();
+      }
+    });
+
+    disconnectBtn.addEventListener('click', () => {
+      if (ws) {
+        ws.close();
+      }
+    });
+    
+    // Initialize the page when loaded
+    window.addEventListener('load', () => {
+      // Default to client role
+      clientRadio.checked = true;
+      therapistRadio.checked = false;
+      
+      // Pre-fill with test values if needed
+      // (you can set these based on your test environment)
+    });

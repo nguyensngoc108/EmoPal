@@ -1,0 +1,12 @@
+django>=4.2.0
+channels>=4.0.0
+pymongo>=4.0.0
+django-rest-framework>=0.1.0
+djangorestframework-simplejwt>=5.2.0
+cloudinary>=1.33.0
+python-dotenv>=1.0.0
+opencv-python>=4.7.0
+numpy>=1.22.0
+pillow>=9.0.0
+werkzeug>=2.3.0
+# Add any other dependencies your project uses

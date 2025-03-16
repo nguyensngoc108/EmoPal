@@ -1,0 +1,37 @@
+services:
+  web:
+    build: ./server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/app
+    env_file:
+      - ./server/.env
+    # Removed dependency on mongo-express so it can start independently
+
+  # MongoDB service (optional - can be commented out when using Atlas)
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+
+  # MongoDB Web Admin (optional - can be commented out when using Atlas)
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=example
+      - ME_CONFIG_OPTIONS_EDITORTHEME=ambiance
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data:

@@ -1,0 +1,2611 @@
+{
+  "67ca14dbb835b32d67b60375": {
+    "name": "therapist1",
+    "standard_slots": [
+      {
+        "id": "67d0f02a3af40fcee13cc8d5",
+        "day": 0,
+        "start": "08:00",
+        "end": "11:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02a3af40fcee13cc8d6",
+        "day": 2,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02a3af40fcee13cc8d7",
+        "day": 2,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02a3af40fcee13cc8d8",
+        "day": 2,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02a3af40fcee13cc8d9",
+        "day": 4,
+        "start": "08:00",
+        "end": "10:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f02a3af40fcee13cc8da",
+        "day": 5,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f02b3af40fcee13cc8db",
+        "day": 1,
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f02b3af40fcee13cc8dc",
+        "date": "2025-04-07",
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f02c3af40fcee13cc8dd",
+        "date": "2025-03-19",
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f02c3af40fcee13cc8de",
+        "date": "2025-03-18",
+        "start": "11:00",
+        "end": "14:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f02c3af40fcee13cc8df",
+        "date": "2025-03-21",
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-09",
+        "end": "2025-04-14",
+        "reason": "Vacation",
+        "length_days": 5
+      }
+    ],
+    "total_slots": 11
+  },
+  "67d04e224e1f723686513fe8": {
+    "name": "Dr. Susan Young",
+    "standard_slots": [
+      {
+        "id": "67d0f02c3af40fcee13cc8e1",
+        "day": 2,
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f02c3af40fcee13cc8e2",
+        "day": 2,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f02c3af40fcee13cc8e3",
+        "day": 2,
+        "start": "16:00",
+        "end": "18:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f02c3af40fcee13cc8e4",
+        "day": 3,
+        "start": "17:00",
+        "end": "19:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f02c3af40fcee13cc8e5",
+        "day": 4,
+        "start": "18:00",
+        "end": "20:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f02c3af40fcee13cc8e6",
+        "day": 6,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f02c3af40fcee13cc8e7",
+        "day": 4,
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f02d3af40fcee13cc8e8",
+        "date": "2025-03-19",
+        "start": "17:00",
+        "end": "20:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f02d3af40fcee13cc8e9",
+        "date": "2025-04-08",
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f02d3af40fcee13cc8ea",
+        "date": "2025-03-31",
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-23",
+        "end": "2025-04-30",
+        "reason": "Conference",
+        "length_days": 7
+      },
+      {
+        "start": "2025-04-14",
+        "end": "2025-04-18",
+        "reason": "Vacation",
+        "length_days": 4
+      }
+    ],
+    "total_slots": 10
+  },
+  "67d04e244e1f723686513fea": {
+    "name": "Dr. Lisa Lewis",
+    "standard_slots": [
+      {
+        "id": "67d0f02d3af40fcee13cc8ed",
+        "day": 0,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02d3af40fcee13cc8ee",
+        "day": 0,
+        "start": "15:00",
+        "end": "17:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f02d3af40fcee13cc8ef",
+        "day": 1,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02d3af40fcee13cc8f0",
+        "day": 4,
+        "start": "09:00",
+        "end": "11:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f02d3af40fcee13cc8f1",
+        "day": 0,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f02d3af40fcee13cc8f2",
+        "day": 4,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f02d3af40fcee13cc8f3",
+        "date": "2025-04-11",
+        "start": "17:00",
+        "end": "19:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f02e3af40fcee13cc8f4",
+        "date": "2025-03-27",
+        "start": "13:00",
+        "end": "15:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-06-06",
+        "end": "2025-06-10",
+        "reason": "Training",
+        "length_days": 4
+      },
+      {
+        "start": "2025-05-03",
+        "end": "2025-05-10",
+        "reason": "Personal",
+        "length_days": 7
+      },
+      {
+        "start": "2025-04-09",
+        "end": "2025-04-12",
+        "reason": "Vacation",
+        "length_days": 3
+      }
+    ],
+    "total_slots": 8
+  },
+  "67d04e254e1f723686513fec": {
+    "name": "Dr. Jessica Johnson",
+    "standard_slots": [
+      {
+        "id": "67d0f02e3af40fcee13cc8f8",
+        "day": 1,
+        "start": "13:00",
+        "end": "15:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f02e3af40fcee13cc8f9",
+        "day": 1,
+        "start": "15:00",
+        "end": "17:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f02e3af40fcee13cc8fa",
+        "day": 2,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02e3af40fcee13cc8fb",
+        "day": 2,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02e3af40fcee13cc8fc",
+        "day": 4,
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f02e3af40fcee13cc8fd",
+        "day": 4,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02e3af40fcee13cc8fe",
+        "day": 4,
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f02f3af40fcee13cc8ff",
+        "day": 4,
+        "start": "16:00",
+        "end": "19:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02f3af40fcee13cc900",
+        "day": 6,
+        "start": "15:00",
+        "end": "17:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f02f3af40fcee13cc901",
+        "day": 0,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f02f3af40fcee13cc902",
+        "day": 2,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f02f3af40fcee13cc903",
+        "date": "2025-03-20",
+        "start": "13:00",
+        "end": "15:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f02f3af40fcee13cc904",
+        "date": "2025-03-13",
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f02f3af40fcee13cc905",
+        "date": "2025-03-20",
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-05-19",
+        "end": "2025-05-20",
+        "reason": "Personal",
+        "length_days": 1
+      },
+      {
+        "start": "2025-04-05",
+        "end": "2025-04-09",
+        "reason": "Training",
+        "length_days": 4
+      },
+      {
+        "start": "2025-05-22",
+        "end": "2025-05-25",
+        "reason": "Training",
+        "length_days": 3
+      }
+    ],
+    "total_slots": 14
+  },
+  "67d04e264e1f723686513fee": {
+    "name": "Dr. Karen Davis",
+    "standard_slots": [
+      {
+        "id": "67d0f02f3af40fcee13cc909",
+        "day": 0,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f02f3af40fcee13cc90a",
+        "day": 4,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f02f3af40fcee13cc90b",
+        "day": 0,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f02f3af40fcee13cc90c",
+        "day": 4,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0303af40fcee13cc90d",
+        "date": "2025-03-20",
+        "start": "13:00",
+        "end": "15:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0303af40fcee13cc90e",
+        "date": "2025-03-26",
+        "start": "17:00",
+        "end": "20:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0303af40fcee13cc90f",
+        "date": "2025-04-08",
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0303af40fcee13cc910",
+        "date": "2025-04-10",
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-24",
+        "end": "2025-05-01",
+        "reason": "Vacation",
+        "length_days": 7
+      },
+      {
+        "start": "2025-05-08",
+        "end": "2025-05-15",
+        "reason": "Personal",
+        "length_days": 7
+      },
+      {
+        "start": "2025-05-21",
+        "end": "2025-05-23",
+        "reason": "Personal",
+        "length_days": 2
+      }
+    ],
+    "total_slots": 8
+  },
+  "67d04e274e1f723686513ff0": {
+    "name": "Dr. Aisha Williams",
+    "standard_slots": [
+      {
+        "id": "67d0f0303af40fcee13cc914",
+        "day": 1,
+        "start": "08:00",
+        "end": "11:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0303af40fcee13cc915",
+        "day": 1,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0303af40fcee13cc916",
+        "day": 1,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0303af40fcee13cc917",
+        "day": 1,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0303af40fcee13cc918",
+        "day": 1,
+        "start": "16:00",
+        "end": "19:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0313af40fcee13cc919",
+        "day": 2,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0313af40fcee13cc91a",
+        "day": 3,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0313af40fcee13cc91b",
+        "day": 3,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0313af40fcee13cc91c",
+        "day": 1,
+        "start": "16:00",
+        "end": "18:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0313af40fcee13cc91d",
+        "date": "2025-03-14",
+        "start": "15:00",
+        "end": "17:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0313af40fcee13cc91e",
+        "date": "2025-04-07",
+        "start": "15:00",
+        "end": "17:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0313af40fcee13cc91f",
+        "date": "2025-04-11",
+        "start": "11:00",
+        "end": "14:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0313af40fcee13cc920",
+        "date": "2025-03-20",
+        "start": "17:00",
+        "end": "19:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-07",
+        "end": "2025-04-10",
+        "reason": "Personal",
+        "length_days": 3
+      },
+      {
+        "start": "2025-04-01",
+        "end": "2025-04-06",
+        "reason": "Vacation",
+        "length_days": 5
+      },
+      {
+        "start": "2025-05-19",
+        "end": "2025-05-24",
+        "reason": "Conference",
+        "length_days": 5
+      }
+    ],
+    "total_slots": 13
+  },
+  "67d04e2b4e1f723686513ff2": {
+    "name": "Dr. Sarah Garcia",
+    "standard_slots": [
+      {
+        "id": "67d0f0313af40fcee13cc924",
+        "day": 1,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0323af40fcee13cc925",
+        "day": 1,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0323af40fcee13cc926",
+        "day": 2,
+        "start": "08:00",
+        "end": "11:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0323af40fcee13cc927",
+        "day": 2,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0323af40fcee13cc928",
+        "day": 3,
+        "start": "18:00",
+        "end": "20:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0323af40fcee13cc929",
+        "day": 3,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0323af40fcee13cc92a",
+        "day": 5,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0323af40fcee13cc92b",
+        "date": "2025-03-19",
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0323af40fcee13cc92c",
+        "date": "2025-03-28",
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0323af40fcee13cc92d",
+        "date": "2025-04-07",
+        "start": "09:00",
+        "end": "11:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0323af40fcee13cc92e",
+        "date": "2025-03-21",
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-06-06",
+        "end": "2025-06-09",
+        "reason": "Vacation",
+        "length_days": 3
+      }
+    ],
+    "total_slots": 11
+  },
+  "67d04e2c4e1f723686513ff4": {
+    "name": "Dr. Mohammed Young",
+    "standard_slots": [
+      {
+        "id": "67d0f0323af40fcee13cc930",
+        "day": 2,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0333af40fcee13cc931",
+        "day": 3,
+        "start": "08:00",
+        "end": "10:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0333af40fcee13cc932",
+        "day": 3,
+        "start": "16:00",
+        "end": "19:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0333af40fcee13cc933",
+        "day": 3,
+        "start": "16:00",
+        "end": "19:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0333af40fcee13cc934",
+        "day": 4,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0333af40fcee13cc935",
+        "date": "2025-04-04",
+        "start": "15:00",
+        "end": "17:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0333af40fcee13cc936",
+        "date": "2025-03-19",
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0333af40fcee13cc937",
+        "date": "2025-04-05",
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-21",
+        "end": "2025-04-22",
+        "reason": "Training",
+        "length_days": 1
+      },
+      {
+        "start": "2025-04-06",
+        "end": "2025-04-13",
+        "reason": "Conference",
+        "length_days": 7
+      },
+      {
+        "start": "2025-04-23",
+        "end": "2025-04-26",
+        "reason": "Vacation",
+        "length_days": 3
+      }
+    ],
+    "total_slots": 8
+  },
+  "67d04e2d4e1f723686513ff6": {
+    "name": "Dr. Jamal King",
+    "standard_slots": [
+      {
+        "id": "67d0f0333af40fcee13cc93b",
+        "day": 1,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0333af40fcee13cc93c",
+        "day": 4,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0343af40fcee13cc93d",
+        "day": 5,
+        "start": "08:00",
+        "end": "10:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0343af40fcee13cc93e",
+        "day": 5,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0343af40fcee13cc93f",
+        "day": 5,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0343af40fcee13cc940",
+        "day": 5,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0343af40fcee13cc941",
+        "date": "2025-04-06",
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0343af40fcee13cc942",
+        "date": "2025-04-03",
+        "start": "11:00",
+        "end": "14:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-05-08",
+        "end": "2025-05-11",
+        "reason": "Vacation",
+        "length_days": 3
+      },
+      {
+        "start": "2025-05-09",
+        "end": "2025-05-13",
+        "reason": "Personal",
+        "length_days": 4
+      },
+      {
+        "start": "2025-04-17",
+        "end": "2025-04-22",
+        "reason": "Vacation",
+        "length_days": 5
+      }
+    ],
+    "total_slots": 8
+  },
+  "67d04e2f4e1f723686513ff8": {
+    "name": "Dr. Mei Singh",
+    "standard_slots": [
+      {
+        "id": "67d0f0343af40fcee13cc946",
+        "day": 1,
+        "start": "09:00",
+        "end": "11:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0343af40fcee13cc947",
+        "day": 1,
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0343af40fcee13cc948",
+        "day": 1,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0353af40fcee13cc949",
+        "day": 1,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0353af40fcee13cc94a",
+        "day": 1,
+        "start": "17:00",
+        "end": "19:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0353af40fcee13cc94b",
+        "day": 2,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0353af40fcee13cc94c",
+        "day": 2,
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0353af40fcee13cc94d",
+        "day": 3,
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0353af40fcee13cc94e",
+        "day": 3,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0353af40fcee13cc94f",
+        "day": 3,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0353af40fcee13cc950",
+        "day": 3,
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0353af40fcee13cc951",
+        "day": 0,
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0353af40fcee13cc952",
+        "date": "2025-03-14",
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0353af40fcee13cc953",
+        "date": "2025-03-24",
+        "start": "17:00",
+        "end": "19:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0353af40fcee13cc954",
+        "date": "2025-03-28",
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-25",
+        "end": "2025-05-01",
+        "reason": "Conference",
+        "length_days": 6
+      },
+      {
+        "start": "2025-05-11",
+        "end": "2025-05-16",
+        "reason": "Vacation",
+        "length_days": 5
+      }
+    ],
+    "total_slots": 15
+  },
+  "67d04e304e1f723686513ffa": {
+    "name": "Dr. Mark Harris",
+    "standard_slots": [
+      {
+        "id": "67d0f0363af40fcee13cc957",
+        "day": 1,
+        "start": "16:00",
+        "end": "19:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0363af40fcee13cc958",
+        "day": 2,
+        "start": "13:00",
+        "end": "15:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0363af40fcee13cc959",
+        "day": 2,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0363af40fcee13cc95a",
+        "day": 3,
+        "start": "18:00",
+        "end": "21:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0363af40fcee13cc95b",
+        "day": 4,
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0363af40fcee13cc95c",
+        "day": 4,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0363af40fcee13cc95d",
+        "day": 4,
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0363af40fcee13cc95e",
+        "day": 0,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0363af40fcee13cc95f",
+        "day": 1,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0363af40fcee13cc960",
+        "date": "2025-04-03",
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0363af40fcee13cc961",
+        "date": "2025-04-09",
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0373af40fcee13cc962",
+        "date": "2025-04-04",
+        "start": "16:00",
+        "end": "19:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0373af40fcee13cc963",
+        "date": "2025-03-13",
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-05-01",
+        "end": "2025-05-07",
+        "reason": "Personal",
+        "length_days": 6
+      },
+      {
+        "start": "2025-06-03",
+        "end": "2025-06-05",
+        "reason": "Vacation",
+        "length_days": 2
+      },
+      {
+        "start": "2025-03-20",
+        "end": "2025-03-22",
+        "reason": "Training",
+        "length_days": 2
+      }
+    ],
+    "total_slots": 13
+  },
+  "67d04e314e1f723686513ffc": {
+    "name": "Dr. Mei Hall",
+    "standard_slots": [
+      {
+        "id": "67d0f0373af40fcee13cc967",
+        "day": 3,
+        "start": "09:00",
+        "end": "11:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0373af40fcee13cc968",
+        "day": 3,
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0373af40fcee13cc969",
+        "day": 3,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0373af40fcee13cc96a",
+        "day": 4,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0373af40fcee13cc96b",
+        "day": 4,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0373af40fcee13cc96c",
+        "day": 4,
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0373af40fcee13cc96d",
+        "day": 2,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0383af40fcee13cc96e",
+        "day": 3,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0383af40fcee13cc96f",
+        "date": "2025-04-02",
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0383af40fcee13cc970",
+        "date": "2025-04-08",
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0383af40fcee13cc971",
+        "date": "2025-03-31",
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0383af40fcee13cc972",
+        "date": "2025-04-08",
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-08",
+        "end": "2025-04-14",
+        "reason": "Vacation",
+        "length_days": 6
+      },
+      {
+        "start": "2025-05-05",
+        "end": "2025-05-10",
+        "reason": "Conference",
+        "length_days": 5
+      }
+    ],
+    "total_slots": 12
+  },
+  "67d04e324e1f723686513ffe": {
+    "name": "Dr. Jamal Rodriguez",
+    "standard_slots": [
+      {
+        "id": "67d0f0383af40fcee13cc975",
+        "day": 1,
+        "start": "17:00",
+        "end": "20:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0383af40fcee13cc976",
+        "day": 3,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0383af40fcee13cc977",
+        "day": 4,
+        "start": "08:00",
+        "end": "10:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0383af40fcee13cc978",
+        "day": 4,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0393af40fcee13cc979",
+        "day": 4,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0393af40fcee13cc97a",
+        "day": 4,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0393af40fcee13cc97b",
+        "day": 4,
+        "start": "16:00",
+        "end": "19:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0393af40fcee13cc97c",
+        "day": 4,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0393af40fcee13cc97d",
+        "day": 2,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0393af40fcee13cc97e",
+        "date": "2025-03-13",
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0393af40fcee13cc97f",
+        "date": "2025-04-01",
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0393af40fcee13cc980",
+        "date": "2025-04-01",
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-19",
+        "end": "2025-04-26",
+        "reason": "Training",
+        "length_days": 7
+      }
+    ],
+    "total_slots": 12
+  },
+  "67d04e344e1f723686514000": {
+    "name": "Dr. Mary Hall",
+    "standard_slots": [
+      {
+        "id": "67d0f0393af40fcee13cc982",
+        "day": 0,
+        "start": "08:00",
+        "end": "11:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0393af40fcee13cc983",
+        "day": 0,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0393af40fcee13cc984",
+        "day": 0,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f03a3af40fcee13cc985",
+        "day": 0,
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f03a3af40fcee13cc986",
+        "day": 1,
+        "start": "08:00",
+        "end": "10:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f03a3af40fcee13cc987",
+        "day": 1,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03a3af40fcee13cc988",
+        "day": 2,
+        "start": "08:00",
+        "end": "11:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03a3af40fcee13cc989",
+        "day": 2,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f03a3af40fcee13cc98a",
+        "day": 1,
+        "start": "11:00",
+        "end": "14:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f03a3af40fcee13cc98b",
+        "day": 3,
+        "start": "16:00",
+        "end": "19:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f03a3af40fcee13cc98c",
+        "date": "2025-04-02",
+        "start": "13:00",
+        "end": "15:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03a3af40fcee13cc98d",
+        "date": "2025-03-16",
+        "start": "16:00",
+        "end": "19:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-05-15",
+        "end": "2025-05-20",
+        "reason": "Vacation",
+        "length_days": 5
+      },
+      {
+        "start": "2025-04-24",
+        "end": "2025-04-26",
+        "reason": "Training",
+        "length_days": 2
+      }
+    ],
+    "total_slots": 12
+  },
+  "67d04e354e1f723686514002": {
+    "name": "Dr. Charles Harris",
+    "standard_slots": [
+      {
+        "id": "67d0f03a3af40fcee13cc990",
+        "day": 0,
+        "start": "17:00",
+        "end": "19:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f03b3af40fcee13cc991",
+        "day": 4,
+        "start": "17:00",
+        "end": "19:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f03b3af40fcee13cc992",
+        "date": "2025-04-09",
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03b3af40fcee13cc993",
+        "date": "2025-04-09",
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03b3af40fcee13cc994",
+        "date": "2025-03-19",
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03b3af40fcee13cc995",
+        "date": "2025-03-20",
+        "start": "16:00",
+        "end": "18:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-15",
+        "end": "2025-04-17",
+        "reason": "Conference",
+        "length_days": 2
+      },
+      {
+        "start": "2025-05-01",
+        "end": "2025-05-02",
+        "reason": "Training",
+        "length_days": 1
+      }
+    ],
+    "total_slots": 6
+  },
+  "67d04e364e1f723686514004": {
+    "name": "Dr. Nancy Clark",
+    "standard_slots": [
+      {
+        "id": "67d0f03b3af40fcee13cc998",
+        "day": 1,
+        "start": "08:00",
+        "end": "11:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03b3af40fcee13cc999",
+        "day": 4,
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f03b3af40fcee13cc99a",
+        "day": 5,
+        "start": "16:00",
+        "end": "18:00",
+        "duration": 2,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f03b3af40fcee13cc99b",
+        "day": 2,
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f03b3af40fcee13cc99c",
+        "date": "2025-03-14",
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03c3af40fcee13cc99d",
+        "date": "2025-03-27",
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03c3af40fcee13cc99e",
+        "date": "2025-04-11",
+        "start": "09:00",
+        "end": "11:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03c3af40fcee13cc99f",
+        "date": "2025-04-09",
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-05-16",
+        "end": "2025-05-21",
+        "reason": "Vacation",
+        "length_days": 5
+      }
+    ],
+    "total_slots": 8
+  },
+  "67d04e374e1f723686514006": {
+    "name": "Dr. Thomas Harris",
+    "standard_slots": [
+      {
+        "id": "67d0f03c3af40fcee13cc9a1",
+        "day": 0,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03c3af40fcee13cc9a2",
+        "day": 0,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03c3af40fcee13cc9a3",
+        "day": 1,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03c3af40fcee13cc9a4",
+        "day": 3,
+        "start": "18:00",
+        "end": "20:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f03c3af40fcee13cc9a5",
+        "day": 1,
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f03d3af40fcee13cc9a6",
+        "day": 3,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f03d3af40fcee13cc9a7",
+        "date": "2025-04-02",
+        "start": "17:00",
+        "end": "20:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03d3af40fcee13cc9a8",
+        "date": "2025-03-24",
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03d3af40fcee13cc9a9",
+        "date": "2025-04-10",
+        "start": "11:00",
+        "end": "14:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-05-08",
+        "end": "2025-05-09",
+        "reason": "Personal",
+        "length_days": 1
+      }
+    ],
+    "total_slots": 9
+  },
+  "67d04e384e1f723686514008": {
+    "name": "Dr. Amir Patel",
+    "standard_slots": [
+      {
+        "id": "67d0f03d3af40fcee13cc9ab",
+        "day": 0,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03d3af40fcee13cc9ac",
+        "day": 0,
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f03d3af40fcee13cc9ad",
+        "day": 0,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03d3af40fcee13cc9ae",
+        "day": 0,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03d3af40fcee13cc9af",
+        "day": 2,
+        "start": "08:00",
+        "end": "11:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03e3af40fcee13cc9b0",
+        "day": 3,
+        "start": "18:00",
+        "end": "20:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f03e3af40fcee13cc9b1",
+        "day": 4,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03e3af40fcee13cc9b2",
+        "day": 4,
+        "start": "16:00",
+        "end": "19:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f03e3af40fcee13cc9b3",
+        "day": 3,
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f03e3af40fcee13cc9b4",
+        "day": 0,
+        "start": "16:00",
+        "end": "18:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f03e3af40fcee13cc9b5",
+        "date": "2025-03-14",
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03e3af40fcee13cc9b6",
+        "date": "2025-03-18",
+        "start": "09:00",
+        "end": "11:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03e3af40fcee13cc9b7",
+        "date": "2025-04-07",
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03e3af40fcee13cc9b8",
+        "date": "2025-04-10",
+        "start": "17:00",
+        "end": "19:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-05-27",
+        "end": "2025-05-30",
+        "reason": "Conference",
+        "length_days": 3
+      },
+      {
+        "start": "2025-05-13",
+        "end": "2025-05-14",
+        "reason": "Training",
+        "length_days": 1
+      },
+      {
+        "start": "2025-05-05",
+        "end": "2025-05-08",
+        "reason": "Vacation",
+        "length_days": 3
+      }
+    ],
+    "total_slots": 14
+  },
+  "67d04e394e1f72368651400a": {
+    "name": "Dr. Susan Garcia",
+    "standard_slots": [],
+    "extended_slots": [
+      {
+        "id": "67d0f03f3af40fcee13cc9bc",
+        "day": 0,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f03f3af40fcee13cc9bd",
+        "date": "2025-03-31",
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f03f3af40fcee13cc9be",
+        "date": "2025-03-19",
+        "start": "17:00",
+        "end": "19:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-05-11",
+        "end": "2025-05-16",
+        "reason": "Personal",
+        "length_days": 5
+      },
+      {
+        "start": "2025-05-08",
+        "end": "2025-05-14",
+        "reason": "Conference",
+        "length_days": 6
+      },
+      {
+        "start": "2025-04-22",
+        "end": "2025-04-28",
+        "reason": "Conference",
+        "length_days": 6
+      }
+    ],
+    "total_slots": 3
+  },
+  "67d04e3a4e1f72368651400c": {
+    "name": "Dr. Leila Lee",
+    "standard_slots": [
+      {
+        "id": "67d0f03f3af40fcee13cc9c2",
+        "day": 0,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03f3af40fcee13cc9c3",
+        "day": 0,
+        "start": "15:00",
+        "end": "17:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f03f3af40fcee13cc9c4",
+        "day": 2,
+        "start": "08:00",
+        "end": "11:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f03f3af40fcee13cc9c5",
+        "day": 2,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0403af40fcee13cc9c6",
+        "day": 2,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0403af40fcee13cc9c7",
+        "day": 2,
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0403af40fcee13cc9c8",
+        "day": 3,
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0403af40fcee13cc9c9",
+        "day": 3,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0403af40fcee13cc9ca",
+        "day": 3,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0403af40fcee13cc9cb",
+        "day": 3,
+        "start": "17:00",
+        "end": "20:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0403af40fcee13cc9cc",
+        "day": 4,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0403af40fcee13cc9cd",
+        "day": 2,
+        "start": "13:00",
+        "end": "15:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0403af40fcee13cc9ce",
+        "date": "2025-03-30",
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0403af40fcee13cc9cf",
+        "date": "2025-04-07",
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0403af40fcee13cc9d0",
+        "date": "2025-04-04",
+        "start": "09:00",
+        "end": "11:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0403af40fcee13cc9d1",
+        "date": "2025-03-17",
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-05-17",
+        "end": "2025-05-19",
+        "reason": "Vacation",
+        "length_days": 2
+      },
+      {
+        "start": "2025-04-20",
+        "end": "2025-04-22",
+        "reason": "Vacation",
+        "length_days": 2
+      },
+      {
+        "start": "2025-06-03",
+        "end": "2025-06-04",
+        "reason": "Vacation",
+        "length_days": 1
+      }
+    ],
+    "total_slots": 16
+  },
+  "67d04e3c4e1f72368651400e": {
+    "name": "Dr. Matthew Wong",
+    "standard_slots": [
+      {
+        "id": "67d0f0413af40fcee13cc9d5",
+        "day": 2,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0413af40fcee13cc9d6",
+        "day": 6,
+        "start": "16:00",
+        "end": "18:00",
+        "duration": 2,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0413af40fcee13cc9d7",
+        "day": 1,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0413af40fcee13cc9d8",
+        "date": "2025-03-29",
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0413af40fcee13cc9d9",
+        "date": "2025-03-19",
+        "start": "13:00",
+        "end": "15:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0413af40fcee13cc9da",
+        "date": "2025-03-21",
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0413af40fcee13cc9db",
+        "date": "2025-03-14",
+        "start": "11:00",
+        "end": "14:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-27",
+        "end": "2025-05-03",
+        "reason": "Personal",
+        "length_days": 6
+      },
+      {
+        "start": "2025-04-14",
+        "end": "2025-04-15",
+        "reason": "Training",
+        "length_days": 1
+      }
+    ],
+    "total_slots": 7
+  },
+  "67d04e3d4e1f723686514010": {
+    "name": "Dr. Daniel Jackson",
+    "standard_slots": [
+      {
+        "id": "67d0f0413af40fcee13cc9de",
+        "day": 3,
+        "start": "08:00",
+        "end": "11:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0423af40fcee13cc9df",
+        "day": 3,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0423af40fcee13cc9e0",
+        "day": 3,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0423af40fcee13cc9e1",
+        "day": 3,
+        "start": "16:00",
+        "end": "18:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0423af40fcee13cc9e2",
+        "day": 4,
+        "start": "15:00",
+        "end": "18:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0423af40fcee13cc9e3",
+        "day": 5,
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0423af40fcee13cc9e4",
+        "day": 4,
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0423af40fcee13cc9e5",
+        "date": "2025-03-18",
+        "start": "13:00",
+        "end": "16:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0423af40fcee13cc9e6",
+        "date": "2025-04-03",
+        "start": "14:00",
+        "end": "17:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-05-13",
+        "end": "2025-05-16",
+        "reason": "Vacation",
+        "length_days": 3
+      },
+      {
+        "start": "2025-04-04",
+        "end": "2025-04-07",
+        "reason": "Personal",
+        "length_days": 3
+      },
+      {
+        "start": "2025-04-13",
+        "end": "2025-04-18",
+        "reason": "Vacation",
+        "length_days": 5
+      }
+    ],
+    "total_slots": 9
+  },
+  "67d04e3f4e1f723686514012": {
+    "name": "Dr. Jessica Young",
+    "standard_slots": [
+      {
+        "id": "67d0f0423af40fcee13cc9ea",
+        "day": 0,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0423af40fcee13cc9eb",
+        "day": 0,
+        "start": "16:00",
+        "end": "18:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0433af40fcee13cc9ec",
+        "day": 3,
+        "start": "18:00",
+        "end": "21:00",
+        "duration": 3
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0433af40fcee13cc9ed",
+        "day": 0,
+        "start": "15:00",
+        "end": "17:00",
+        "duration": 2,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0433af40fcee13cc9ee",
+        "day": 3,
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0433af40fcee13cc9ef",
+        "date": "2025-04-02",
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0433af40fcee13cc9f0",
+        "date": "2025-03-25",
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0433af40fcee13cc9f1",
+        "date": "2025-03-22",
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-06-06",
+        "end": "2025-06-12",
+        "reason": "Training",
+        "length_days": 6
+      }
+    ],
+    "total_slots": 8
+  },
+  "67d04e414e1f723686514014": {
+    "name": "Dr. Mary White",
+    "standard_slots": [
+      {
+        "id": "67d0f0433af40fcee13cc9f3",
+        "day": 2,
+        "start": "08:00",
+        "end": "10:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0433af40fcee13cc9f4",
+        "day": 2,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0433af40fcee13cc9f5",
+        "day": 3,
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0433af40fcee13cc9f6",
+        "day": 3,
+        "start": "11:00",
+        "end": "13:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0433af40fcee13cc9f7",
+        "day": 3,
+        "start": "13:00",
+        "end": "15:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0443af40fcee13cc9f8",
+        "day": 3,
+        "start": "15:00",
+        "end": "17:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0443af40fcee13cc9f9",
+        "day": 4,
+        "start": "13:00",
+        "end": "15:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0443af40fcee13cc9fa",
+        "day": 4,
+        "start": "15:00",
+        "end": "17:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0443af40fcee13cc9fb",
+        "date": "2025-03-31",
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0443af40fcee13cc9fc",
+        "date": "2025-04-08",
+        "start": "09:00",
+        "end": "12:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0443af40fcee13cc9fd",
+        "date": "2025-03-15",
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0443af40fcee13cc9fe",
+        "date": "2025-03-24",
+        "start": "14:00",
+        "end": "16:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-26",
+        "end": "2025-05-01",
+        "reason": "Vacation",
+        "length_days": 5
+      },
+      {
+        "start": "2025-03-29",
+        "end": "2025-04-04",
+        "reason": "Vacation",
+        "length_days": 6
+      },
+      {
+        "start": "2025-05-29",
+        "end": "2025-05-31",
+        "reason": "Vacation",
+        "length_days": 2
+      }
+    ],
+    "total_slots": 12
+  },
+  "67d04e424e1f723686514016": {
+    "name": "Dr. Mark Yang",
+    "standard_slots": [
+      {
+        "id": "67d0f0443af40fcee13cca02",
+        "day": 0,
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0453af40fcee13cca03",
+        "day": 0,
+        "start": "12:00",
+        "end": "15:00",
+        "duration": 3
+      },
+      {
+        "id": "67d0f0453af40fcee13cca04",
+        "day": 1,
+        "start": "08:00",
+        "end": "10:00",
+        "duration": 2
+      },
+      {
+        "id": "67d0f0453af40fcee13cca05",
+        "day": 1,
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0453af40fcee13cca06",
+        "date": "2025-03-18",
+        "start": "11:00",
+        "end": "14:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0453af40fcee13cca07",
+        "date": "2025-03-16",
+        "start": "17:00",
+        "end": "19:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0453af40fcee13cca08",
+        "date": "2025-03-20",
+        "start": "10:00",
+        "end": "13:00",
+        "duration": 3,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0453af40fcee13cca09",
+        "date": "2025-03-31",
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-03-21",
+        "end": "2025-03-22",
+        "reason": "Personal",
+        "length_days": 1
+      },
+      {
+        "start": "2025-05-13",
+        "end": "2025-05-16",
+        "reason": "Personal",
+        "length_days": 3
+      },
+      {
+        "start": "2025-05-12",
+        "end": "2025-05-14",
+        "reason": "Training",
+        "length_days": 2
+      }
+    ],
+    "total_slots": 8
+  },
+  "67d04e434e1f723686514018": {
+    "name": "Dr. John Harris",
+    "standard_slots": [
+      {
+        "id": "67d0f0453af40fcee13cca0d",
+        "day": 3,
+        "start": "18:00",
+        "end": "20:00",
+        "duration": 2
+      }
+    ],
+    "extended_slots": [
+      {
+        "id": "67d0f0453af40fcee13cca0e",
+        "day": 3,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2,
+        "session_type": "messaging"
+      },
+      {
+        "id": "67d0f0453af40fcee13cca0f",
+        "day": 5,
+        "start": "12:00",
+        "end": "14:00",
+        "duration": 2,
+        "session_type": "messaging"
+      }
+    ],
+    "non_recurring_slots": [
+      {
+        "id": "67d0f0463af40fcee13cca10",
+        "date": "2025-04-06",
+        "start": "10:00",
+        "end": "12:00",
+        "duration": 2,
+        "recurring": false
+      },
+      {
+        "id": "67d0f0463af40fcee13cca11",
+        "date": "2025-04-10",
+        "start": "11:00",
+        "end": "14:00",
+        "duration": 3,
+        "recurring": false
+      }
+    ],
+    "unavailable_periods": [
+      {
+        "start": "2025-04-15",
+        "end": "2025-04-16",
+        "reason": "Training",
+        "length_days": 1
+      },
+      {
+        "start": "2025-05-31",
+        "end": "2025-06-05",
+        "reason": "Vacation",
+        "length_days": 5
+      }
+    ],
+    "total_slots": 5
+  }
+}
