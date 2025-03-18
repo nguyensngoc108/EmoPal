@@ -23,6 +23,8 @@ import PaymentSuccess from "./pages/PaymentSuccess"; // Add this import
 import PaymentCanceled from "./pages/PaymentCanceled"; // Add this import
 import PaymentDetails from "./pages/PaymentDetails.jsx";
 import PaymentHistory from "./pages/PaymentHistory.jsx";
+import SessionsList from "./pages/SessionsList.jsx";
+import SessionDetail from "./pages/SessionDetail.jsx";
 
 // Commented imports will be uncommented as you implement these components
 // import TherapistList from './pages/TherapistList';
@@ -31,6 +33,7 @@ import PaymentHistory from "./pages/PaymentHistory.jsx";
 // import SessionsList from './pages/SessionsList';
 import VideoSession from './pages/VideoSession';
 import "./App.css";
+import About from "./pages/About"; // New component
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -76,7 +79,7 @@ function AppContent() {
             {/* Public Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-
+            <Route path="/about" element={<About />} />
             {/* Protected Routes */}
             <Route
               path="/dashboard"
@@ -208,6 +211,23 @@ function AppContent() {
               }
             />
 
+            <Route
+              path="/sessions"
+              element={
+                <ProtectedRoute>
+                  <SessionsList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sessions/:sessionId"
+              element={
+                <ProtectedRoute>
+                  <SessionDetail />
+                </ProtectedRoute>
+              }
+            />
+
             {/* You'll uncomment these routes as you implement the components */}
             {/* <Route path="/therapists" element={
               <ProtectedRoute>
@@ -239,8 +259,9 @@ function AppContent() {
               </ProtectedRoute>
             } />
             */}
-            {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            {/* Default route - Changed to use Dashboard component which will show Landing for non-auth users */}
+            <Route path="/" element={<Dashboard />} />
+            
           </Routes>
         </main>
         <Footer />

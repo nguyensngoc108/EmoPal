@@ -1,55 +1,113 @@
 import api from './api';
 
-const SessionService = {
-  getUpcomingSessions: () => {
+class SessionService {
+  // Get upcoming sessions
+  getUpcomingSessions() {
     return api.get('/sessions/upcoming/');
-  },
-  
-  getPastSessions: (params = {}) => {
+  }
+
+  // Get past sessions
+  getPastSessions(params = {}) {
     return api.get('/sessions/past/', { params });
-  },
+  }
   
-  getSessionById: (sessionId) => {
+  // Get all sessions (useful for therapists)
+  getAllSessions() {
+    return api.get('/sessions');
+  }
+
+  // Get session by ID
+  getSessionById(sessionId) {
     return api.get(`/sessions/${sessionId}/`);
-  },
+  }
   
-  bookSession: (sessionData) => {
-    return api.post('/sessions/book/', sessionData);
-  },
+  // Get session notes
+  getSessionNotes(sessionId) {
+    return api.get(`/sessions/${sessionId}/notes/`);
+  }
   
-  quickBookSession: (sessionData) => {
+  // Add a note to a session
+  addSessionNote(sessionId, noteData) {
+    return api.post(`/sessions/${sessionId}/notes/add/`, noteData);
+  }
+  
+  // Update a note
+  updateSessionNote(sessionId, noteId, noteData) {
+    return api.put(`/sessions/${sessionId}/notes/${noteId}`, noteData);
+  }
+  
+  // Delete a note
+  deleteSessionNote(sessionId, noteId) {
+    return api.delete(`/sessions/${sessionId}/notes/${noteId}`);
+  }
+  
+  // Schedule a new session
+  createSession(sessionData) {
+    return api.post('/sessions', sessionData);
+  }
+  
+  // Book a session
+  bookSession(sessionData) {
+    // Convert dates to ISO string format if they're not already
+    if (sessionData.start_time instanceof Date) {
+      sessionData.start_time = sessionData.start_time.toISOString();
+    }
+    if (sessionData.end_time instanceof Date) {
+      sessionData.end_time = sessionData.end_time.toISOString();
+    }
     
-    return api.post('/sessions/quick-book/', sessionData);
-  },
+    return api.post('/sessions/book/', sessionData);
+  }
   
-  updateSessionStatus: (sessionId, status) => {
+  // Quick book a session
+  quickBookSession(sessionData) {
+    return api.post('/sessions/quick-book', sessionData);
+  }
+  
+  // Update session status
+   // Update session status
+   updateSessionStatus(sessionId, status) {
+    // Change from PATCH to PUT to match server configuration
     return api.put(`/sessions/${sessionId}/status/`, { status });
-  },
+  }
   
-  endSession: (sessionId) => {
+  // End a session
+  endSession(sessionId) {
     return api.put(`/sessions/${sessionId}/status/`, { status: 'completed' });
-  },
+  }
   
-  cancelSession: (sessionId, reason) => {
+  // Cancel a session
+  cancelSession(sessionId, reason) {
     return api.post(`/sessions/${sessionId}/cancel/`, { reason });
-  },
+  }
   
-  uploadSessionRecording: (sessionId, recordingFile) => {
+  // Upload session recording (for video sessions)
+  uploadSessionRecording(sessionId, recordingFile) {
     const formData = new FormData();
     formData.append('recording_file', recordingFile);
     
-    return api.post(`/sessions/${sessionId}/upload-recording/`, formData, {
+    return api.post(`/sessions/${sessionId}/upload-recording`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
-  },
-  
-  addNotes: (sessionId, notes) => {
-    return api.put(`/sessions/${sessionId}/notes/`, { notes });
-  },
-  
-  initiateVideoCall: (data) => {
-    return api.post('/sessions/initiate-video-call/', data);
   }
-};
+  
+  // Get session statistics
+  getSessionStatistics() {
+    return api.get('/sessions/statistics/');
+  }
+  
+  // Initialize emotion analysis for a session
+  initializeEmotionAnalysis(sessionId) {
+    return api.post('/ai_services/emotion-analysis/initialize', {
+      session_id: sessionId
+    });
+  }
+  
+  // Get emotion analysis history for a session
+  getEmotionHistory(sessionId) {
+    return api.get(`/ai_services/emotion-analysis/history/${sessionId}`);
+  }
+}
 
-export default SessionService;
+const sessionService = new SessionService();
+export default sessionService;

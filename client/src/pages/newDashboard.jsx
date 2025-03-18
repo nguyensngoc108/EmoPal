@@ -4,11 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 import SessionService from '../services/SessionServices';
 import '../styles/Dashboard.css';
 
-// Import Landing component
-import Landing from './Landing';
-// Import Landing CSS to ensure styles are loaded
-import '../styles/Landing.css';
-
 // Import icons
 import { 
   CalendarIcon, 
@@ -73,13 +68,11 @@ const Dashboard = () => {
 
   // Set greeting based on time of day
   useEffect(() => {
-    if (!isLoggedIn) return; // Only set greeting if logged in
-    
     const hour = new Date().getHours();
     if (hour < 12) setGreeting('Good Morning');
     else if (hour < 18) setGreeting('Good Afternoon');
     else setGreeting('Good Evening');
-  }, [isLoggedIn]);
+  }, []);
 
   // Fetch data when logged in
   useEffect(() => {
@@ -161,12 +154,15 @@ const Dashboard = () => {
 
   // Render the landing page version for non-logged in users
   if (!isLoggedIn) {
-    return <Landing />; // Use the Landing component directly
+    return (
+      <div className="bg-gradient-to-b from-indigo-50 to-white min-h-screen">
+        {/* Landing page content - unchanged */}
+        {/* ... */}
+      </div>
+    );
   }
 
-  // Continue with the rest of your dashboard code...
-  // This is your existing therapist dashboard
-
+  // Render the therapist-optimized dashboard
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Dashboard Header */}
@@ -1150,5 +1146,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
+                              
 

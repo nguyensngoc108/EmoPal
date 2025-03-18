@@ -55,6 +55,116 @@ def convert_object_ids(obj):
     return obj
 
 
+# def get_participant_details(user_id):
+#     """Get participant name and profile picture from either user or therapist collection"""
+#     # Convert to string if ObjectId
+#     if isinstance(user_id, ObjectId):
+#         user_id = str(user_id)
+
+#     # First try users collection directly
+#     user = User.find_by_id(user_id)
+#     if user:
+#         # return {
+#         #     "id": str(user_id),
+#         #     "first_name": user.get('first_name', ''),
+#         #     "last_name": user.get('last_name', ''),
+#         #     "profile_picture": user.get('profile_picture', ''),
+#         #     "status": user.get('status', 'offline'),
+#         #     "username": user.get('username', '')
+#         # }
+#         # check if first_name and last_name are empty
+#         if not user.get('first_name') and not user.get('last_name'):
+#             # If both are empty, try to parse from username
+#             username = user.get('username', '')
+#             first_name = ''
+#             last_name = ''
+
+#             if username:
+#                 # Split username into words
+#                 name_parts = username.split()
+#                 if len(name_parts) > 1:
+#                     # Last word is the last name
+#                     last_name = name_parts[-1]
+#                     # Everything else is first name
+#                     first_name = ' '.join(name_parts[:-1])
+#                 else:
+#                     # If only one word, use as first name
+#                     first_name = username
+#         #    print profile picture and first name and last name
+#             print(f"Profile picture: {user.get('profile_picture', '')}")
+#             print(f"First name: {first_name}")
+#             print(f"Last name: {last_name}")
+
+#             return {
+#                 "id": str(user_id),
+#                 "first_name": first_name,
+#                 "last_name": last_name,
+#                 "username": username,  # Keep original username too
+#                 "profile_picture": user.get('profile_picture', ''),
+#                 "status": user.get('status', 'offline'),
+#                 "role": user.get('role', 'user')
+#             }
+
+#     # # Then try therapists collection
+#     # from apps.therapists.models import Therapist
+#     # therapist = User.find_by_id(user_id)
+#     # if therapist:
+#     #     # Get the user_id from therapist document
+#     #     therapist_user_id = therapist.get('id')
+
+#     #     if therapist_user_id:
+#     #         # Convert to string if ObjectId
+#     #         if isinstance(therapist_user_id, ObjectId):
+#     #             therapist_user_id = str(therapist_user_id)
+
+#     #         # Look up the related user record for name and profile
+#     #         therapist_user = User.find_by_id(therapist_user_id)
+#     #         if therapist_user:
+#     #             return {
+#     #                 "id": str(user_id),
+#     #                 "first_name": therapist_user.get('first_name', ''),
+#     #                 "last_name": therapist_user.get('last_name', ''),
+#     #                 "profile_picture": therapist_user.get('profile_picture', ''),
+#     #                 "status": therapist_user.get('status', 'offline'),
+#     #                 "username": therapist_user.get('username', ''),
+#     #                 "role": "therapist"
+#     #             }
+
+#     #     # Parse username into first_name and last_name if needed
+#     #     username = therapist_user.get('username', '')
+#     #     first_name = ''
+#     #     last_name = ''
+
+#     #     if username:
+#     #         # Split username into words
+#     #         name_parts = username.split()
+#     #         if len(name_parts) > 1:
+#     #             # Last word is the last name
+#     #             last_name = name_parts[-1]
+#     #             # Everything else is first name
+#     #             first_name = ' '.join(name_parts[:-1])
+#     #         else:
+#     #             # If only one word, use as first name
+#     #             first_name = username
+
+#     #     return {
+#     #         "id": str(user_id),
+#     #         "first_name": first_name,
+#     #         "last_name": last_name,
+#     #         "username": username,  # Keep original username too
+#     #         "profile_picture": therapist.get('profile_picture', ''),
+#     #         "status": therapist.get('status', 'offline'),
+#     #         "role": "therapist"
+#     #     }
+
+#     return {
+#         "id": str(user_id),
+#         "first_name": "",
+#         "last_name": "",
+#         "profile_picture": "",
+#         "status": "offline"
+#     }
+
 def get_participant_details(user_id):
     """Get participant name and profile picture from either user or therapist collection"""
     # Convert to string if ObjectId
@@ -64,95 +174,36 @@ def get_participant_details(user_id):
     # First try users collection directly
     user = User.find_by_id(user_id)
     if user:
-        # return {
-        #     "id": str(user_id),
-        #     "first_name": user.get('first_name', ''),
-        #     "last_name": user.get('last_name', ''),
-        #     "profile_picture": user.get('profile_picture', ''),
-        #     "status": user.get('status', 'offline'),
-        #     "username": user.get('username', '')
-        # }
-        # check if first_name and last_name are empty
-        if not user.get('first_name') and not user.get('last_name'):
-            # If both are empty, try to parse from username
-            username = user.get('username', '')
-            first_name = ''
-            last_name = ''
+        # Extract basic user details
+        first_name = user.get('first_name', '')
+        last_name = user.get('last_name', '')
+        username = user.get('username', '')
+        
+        # Only parse from username if both first_name AND last_name are empty
+        if not first_name and not last_name and username:
+            # Split username into words
+            name_parts = username.split()
+            if len(name_parts) > 1:
+                # Last word is the last name
+                last_name = name_parts[-1]
+                # Everything else is first name
+                first_name = ' '.join(name_parts[:-1])
+            else:
+                # If only one word, use as first name
+                first_name = username
 
-            if username:
-                # Split username into words
-                name_parts = username.split()
-                if len(name_parts) > 1:
-                    # Last word is the last name
-                    last_name = name_parts[-1]
-                    # Everything else is first name
-                    first_name = ' '.join(name_parts[:-1])
-                else:
-                    # If only one word, use as first name
-                    first_name = username
+        # Always return the complete user details
+        return {
+            "id": str(user_id),
+            "first_name": first_name,
+            "last_name": last_name,
+            "username": username,
+            "profile_picture": user.get('profile_picture', ''),
+            "status": user.get('status', 'offline'),
+            "role": user.get('role', 'user')
+        }
 
-            return {
-                "id": str(user_id),
-                "first_name": first_name,
-                "last_name": last_name,
-                "username": username,  # Keep original username too
-                "profile_picture": user.get('profile_picture', ''),
-                "status": user.get('status', 'offline'),
-                "role": user.get('role', 'user')
-            }
-
-    # # Then try therapists collection
-    # from apps.therapists.models import Therapist
-    # therapist = User.find_by_id(user_id)
-    # if therapist:
-    #     # Get the user_id from therapist document
-    #     therapist_user_id = therapist.get('id')
-
-    #     if therapist_user_id:
-    #         # Convert to string if ObjectId
-    #         if isinstance(therapist_user_id, ObjectId):
-    #             therapist_user_id = str(therapist_user_id)
-
-    #         # Look up the related user record for name and profile
-    #         therapist_user = User.find_by_id(therapist_user_id)
-    #         if therapist_user:
-    #             return {
-    #                 "id": str(user_id),
-    #                 "first_name": therapist_user.get('first_name', ''),
-    #                 "last_name": therapist_user.get('last_name', ''),
-    #                 "profile_picture": therapist_user.get('profile_picture', ''),
-    #                 "status": therapist_user.get('status', 'offline'),
-    #                 "username": therapist_user.get('username', ''),
-    #                 "role": "therapist"
-    #             }
-
-    #     # Parse username into first_name and last_name if needed
-    #     username = therapist_user.get('username', '')
-    #     first_name = ''
-    #     last_name = ''
-
-    #     if username:
-    #         # Split username into words
-    #         name_parts = username.split()
-    #         if len(name_parts) > 1:
-    #             # Last word is the last name
-    #             last_name = name_parts[-1]
-    #             # Everything else is first name
-    #             first_name = ' '.join(name_parts[:-1])
-    #         else:
-    #             # If only one word, use as first name
-    #             first_name = username
-
-    #     return {
-    #         "id": str(user_id),
-    #         "first_name": first_name,
-    #         "last_name": last_name,
-    #         "username": username,  # Keep original username too
-    #         "profile_picture": therapist.get('profile_picture', ''),
-    #         "status": therapist.get('status', 'offline'),
-    #         "role": "therapist"
-    #     }
-
+    # Default response if user not found
     return {
         "id": str(user_id),
         "first_name": "",
@@ -160,7 +211,6 @@ def get_participant_details(user_id):
         "profile_picture": "",
         "status": "offline"
     }
-
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -484,7 +534,7 @@ def get_conversation_history(request, conversation_id):
                 formatted_msg['timestamp'] = formatted_msg['sent_at']
 
             formatted_messages.append(formatted_msg)
-
+        print(f"Formatted messages: {formatted_messages}")
         # Return standardized messages
         return JsonResponse({
             "success": True,
@@ -621,7 +671,9 @@ def get_participant_name(user_id):
         # Then try username
         if details.get('username'):
             return details.get('username')
-
+        # print details
+        print(f"Participant details: {details}")
+        # Finally, return the ID if no name found
     return "Unknown User"
 
 

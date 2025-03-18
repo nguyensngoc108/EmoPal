@@ -1233,3 +1233,116 @@ body:has(.video-session-page) {
     min-height: 250px;
   }
 }
+
+/* ===== CRITICAL VIDEO FIXES ===== */
+/* This section addresses video positioning and rendering issues */
+
+/* 1. Fix local video container positioning */
+.video-session-page .local-video-container {
+  position: absolute !important;
+  top: auto !important;
+  left: 20px !important;
+  bottom: 90px !important;
+  right: auto !important;
+  /* Remove inset property entirely */
+  inset: auto !important;
+  /* Size and appearance */
+  width: 180px !important;
+  height: 135px !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  cursor: grab !important;
+  /* Fix z-index */
+  z-index: 20 !important;
+  /* Drop shadow for better visibility */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4) !important;
+  /* Critical for draggability */
+  transform: none !important;
+  /* Transition for smooth movements */
+  transition: box-shadow 0.2s !important;
+}
+
+/* When dragging, add visual feedback */
+.video-session-page .local-video-container:active {
+  cursor: grabbing !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 2. Fix local video content positioning */
+.video-session-page .local-video {
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important; 
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  /* Remove all transforms and inset properties */
+  transform: none !important;
+  inset: auto !important;
+}
+
+/* 3. Fix the video player within the container */
+.video-session-page .local-video-container .agora_video_player,
+.video-session-page .local-video .agora_video_player {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  /* Force display mode */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* 4. Fix the actual video element */
+.video-session-page .local-video video {
+  /* Force mirroring for front camera */
+  transform: rotateY(180deg) !important;
+  object-fit: cover !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+}
+
+/* ===== CRITICAL SCROLLING FIXES ===== */
+
+/* Force body to maintain position during video session */
+body:has(.video-session-page) {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Ensure main container keeps scrollable behavior contained */
+.video-session-page {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  overflow: auto !important;
+  height: 100vh !important;
+  width: 100vw !important;
+}
+
+/* Make all containers avoid vertical scrolling */
+.video-session-page .therapist-session-layout,
+.video-session-page .client-session-layout {
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Only allow scrolling in designated areas */
+.video-session-page .chat-messages,
+.video-session-page .panel-content {
+  -webkit-overflow-scrolling: touch !important; /* For smoother iOS scrolling */
+}
+
+/* Prevent all touch events from causing page scrolling when dragging */
+.video-session-page .local-video-container {
+  touch-action: none !important;
+}

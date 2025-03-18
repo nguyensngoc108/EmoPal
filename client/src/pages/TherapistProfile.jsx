@@ -74,17 +74,55 @@ const TherapistProfile = () => {
     fetchTherapist();
   }, [id]);
   
-  // Handle booking
+  // Inside the useEffect or create a new function to fetch availability
+  const fetchAvailabilityForDate = async (date) => {
+    try {
+      // Use the selected date
+      const startDate = new Date(date);
+      const endDate = new Date(date);
+      endDate.setDate(endDate.getDate() + 1); // Just get this single day
+      
+      const availabilityResponse = await TherapistService.getTherapistAvailability(id, {
+        start_date: startDate.toISOString().split('T')[0],
+        end_date: endDate.toISOString().split('T')[0]
+      });
+      
+      setAvailableTimes(availabilityResponse.data.availability || []);
+    } catch (err) {
+      console.error("Error fetching availability:", err);
+    }
+  };
+
+  // Also call this when component mounts
+  useEffect(() => {
+    fetchAvailabilityForDate(selectedDate);
+  }, [id, selectedDate]); // Add selectedDate as dependency
+  
+  // Fix the handleBookSession function
   const handleBookSession = async () => {
     if (!selectedTime) return;
     
     try {
-      // Calculate duration from start time and session type
-      const startTime = new Date(selectedTime);
+      // Create a proper date combination of selected date + selected time
+      const selectedTimeObj = new Date(selectedTime);
+      const startTime = new Date(selectedDate);
+      
+      // Transfer only the time portion from selectedTimeObj to startDate
+      startTime.setHours(
+        selectedTimeObj.getHours(),
+        selectedTimeObj.getMinutes(),
+        0, 0
+      );
+      
       const endTime = new Date(startTime);
       endTime.setHours(endTime.getHours() + sessionDuration);
       
-      // Create session data
+      console.log("Selected date:", selectedDate);
+      console.log("Time from slot:", new Date(selectedTime));
+      console.log("Combined start time:", startTime);
+      console.log("End time:", endTime);
+      
+      // Create session data with properly combined date/time
       const sessionData = {
         therapist_id: id,
         start_time: startTime.toISOString(),
@@ -93,7 +131,7 @@ const TherapistProfile = () => {
         duration_hours: sessionDuration
       };
       
-      // Book the session directly (no waiting for therapist acceptance)
+      // Book the session directly
       const response = await SessionService.bookSession(sessionData);
       
       // Show success toast
@@ -349,7 +387,12 @@ const TherapistProfile = () => {
                     type="date"
                     className="w-full border-none focus:ring-0 text-center"
                     value={selectedDate.toISOString().split('T')[0]}
-                    onChange={(e) => setSelectedDate(new Date(e.target.value))}
+                    onChange={(e) => {
+                      const newDate = new Date(e.target.value);
+                      setSelectedDate(newDate);
+                      setSelectedTime(null); // Reset selected time when date changes
+                      fetchAvailabilityForDate(newDate);
+                    }}
                     min={new Date().toISOString().split('T')[0]}
                   />
                 </div>

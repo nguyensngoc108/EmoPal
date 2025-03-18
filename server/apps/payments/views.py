@@ -25,6 +25,18 @@ from .models import Payment
 
 logger = logging.getLogger(__name__)
 
+def convert_object_ids(obj):
+    """Convert MongoDB ObjectId objects to strings for JSON serialization"""
+    if isinstance(obj, ObjectId):
+        return str(obj)
+    elif isinstance(obj, dict):
+        return {k: convert_object_ids(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_object_ids(item) for item in obj]
+    elif isinstance(obj, datetime):
+        return obj.isoformat()
+    return obj
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def create_payment(request, session_id):
@@ -712,6 +724,146 @@ def check_payment_status(request, session_id):
         
     except Exception as e:
         logger.error(f"Error checking payment status: {str(e)}")
+        return JsonResponse({
+            "success": False,
+            "message": str(e)
+        }, status=500)
+
+
+@require_http_methods(["GET"])
+def get_payments_by_session_ids(request):
+    """Get payments for multiple session IDs"""
+    try:
+        # Authenticate user
+        current_user = get_user_from_request(request)
+        if not current_user:
+            return JsonResponse({
+                "success": False,
+                "message": "Authentication required"
+            }, status=401)
+            
+        user_id = str(current_user.get("_id"))
+        
+        # Get session IDs from query parameter
+        session_ids_param = request.GET.get("session_ids", "")
+        if not session_ids_param:
+            return JsonResponse({
+                "success": False,
+                "message": "No session IDs provided"
+            }, status=400)
+            
+        # Split and clean session IDs
+        session_ids = [s.strip() for s in session_ids_param.split(",") if s.strip()]
+        
+        # Convert to ObjectId for query
+        object_ids = []
+        for sid in session_ids:
+            try:
+                object_ids.append(ObjectId(sid))
+            except Exception:
+                # Skip invalid IDs
+                continue
+                
+        if not object_ids:
+            return JsonResponse({
+                "success": False,
+                "message": "No valid session IDs provided"
+            }, status=400)
+        
+        # Get therapist_id if user is a therapist
+        therapist_id = None
+        is_therapist = current_user.get("role") == "therapist"
+        if is_therapist:
+            # First check if therapist_id is in user document
+            if "therapist_id" in current_user:
+                therapist_id = str(current_user.get("therapist_id"))
+            else:
+                # Look up in therapists collection
+                from apps.therapists.models import Therapist
+                therapist = Therapist.find_by_user_id(user_id)
+                if therapist:
+                    therapist_id = str(therapist.get("_id"))
+        
+        # Prepare query to get authorized payments
+        query = {"session_id": {"$in": object_ids}}
+        if is_therapist and therapist_id:
+            query["therapist_id"] = therapist_id
+        else:
+            query["user_id"] = user_id
+        
+        # Get payments
+        payments = Payment.find_by_query(query)
+        
+        # Convert to list and handle ObjectIds
+        result = []
+        for payment in payments:
+            payment = convert_object_ids(payment)
+            result.append(payment)
+        
+        return JsonResponse({
+            "success": True,
+            "payments": result
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting payments by session IDs: {str(e)}")
+        return JsonResponse({
+            "success": False,
+            "message": str(e)
+        }, status=500)
+
+# Add this new view function
+
+@require_http_methods(["GET"])
+def get_payment_by_session_id(request, session_id):
+    """Get payment details for a specific session"""
+    try:
+        # Check authentication
+        current_user = get_user_from_request(request)
+        if not current_user:
+            return JsonResponse({
+                "success": False,
+                "message": "Authentication required"
+            }, status=401)
+            
+        user_id = str(current_user.get("_id"))
+        
+        # Find payment for this session - try both string and ObjectId formats
+        payment = None
+        try:
+            # First try with original format
+            payment = db.payments.find_one({"session_id": session_id})
+            
+            # If not found, try with ObjectId conversion
+            if not payment:
+                payment = db.payments.find_one({"session_id": ObjectId(session_id)})
+                
+        except Exception as e:
+            logger.error(f"Error finding payment by session ID: {str(e)}")
+            
+        if not payment:
+            return JsonResponse({
+                "success": False,
+                "message": "Payment not found for this session"
+            }, status=404)
+            
+        # Verify authorization - user must be the client or the therapist
+        if str(payment.get("user_id")) != user_id and str(payment.get("therapist_id")) != user_id:
+            return JsonResponse({
+                "success": False,
+                "message": "You are not authorized to view this payment"
+            }, status=403)
+            
+        # Convert ObjectIds to strings for JSON response
+        payment = {k: str(v) if isinstance(v, ObjectId) else v for k, v in payment.items()}
+        
+        return JsonResponse({
+            "success": True,
+            "payment": payment
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting payment by session ID: {str(e)}")
         return JsonResponse({
             "success": False,
             "message": str(e)

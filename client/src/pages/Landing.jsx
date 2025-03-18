@@ -1,8 +1,20 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom'; // Add useNavigate
+import { motion, AnimatePresence } from 'framer-motion'; // Add AnimatePresence
+import { useAuth } from '../contexts/AuthContext'; // Add this import
+import '../styles/Landing.css'; // Add your CSS file for styles
 
 const Landing = () => {
+  const navigate = useNavigate(); // Add this hook
+  const { currentUser } = useAuth(); // Add this hook
+  
+  // Redirect already logged-in users to dashboard
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/dashboard');
+    }
+  }, [currentUser, navigate]);
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -20,7 +32,8 @@ const Landing = () => {
     visible: { 
       y: 0, 
       opacity: 1,
-      transition: { duration: 0.8, ease: [0.6, 0.05, -0.01, 0.9] }
+      // Fix the cubic-bezier with valid values (no negative numbers)
+      transition: { duration: 0.8, ease: "easeOut" }  // Use a named easing instead of cubic-bezier
     }
   };
 
@@ -29,11 +42,18 @@ const Landing = () => {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('animate-in');
+          // Add a slight delay to make the animation more noticeable
+          setTimeout(() => {
+            entry.target.classList.add('animate-in');
+          }, 100);
         }
       });
-    }, { threshold: 0.1 });
+    }, { 
+      threshold: 0.15,  // Increased threshold so animation starts when more of element is visible
+      rootMargin: '0px 0px -50px 0px'  // Trigger animation slightly before element is fully in view
+    });
 
+    // Observe all elements with scroll-animation class
     document.querySelectorAll('.scroll-animation').forEach(el => {
       observer.observe(el);
     });
@@ -46,39 +66,43 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-teal-500/10 -z-10"></div>
-        <motion.div 
-          className="container mx-auto px-4 py-24 md:py-32 flex flex-col items-center"
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
-        >
-          <motion.h1 
-            className="text-4xl md:text-6xl font-bold text-center text-gray-800 mb-6"
-            variants={itemVariants}
-          >
-            Understand Your <span className="text-indigo-600">Emotions</span>,<br />
-            Transform Your <span className="text-teal-600">Therapy</span>
-          </motion.h1>
-          
-          <motion.p 
-            className="text-xl text-gray-600 text-center max-w-3xl mb-10"
-            variants={itemVariants}
-          >
-            EmoPal uses facial recognition to help therapists understand your emotions in real-time, creating more effective and personalized therapeutic experiences.
-          </motion.p>
-          
+        <AnimatePresence>
           <motion.div 
-            className="flex flex-col sm:flex-row gap-4"
-            variants={itemVariants}
+            key="hero-content"
+            className="container mx-auto px-4 py-24 md:py-32 flex flex-col items-center"
+            initial="hidden"
+            animate="visible"
+            exit="hidden"  // Add exit animation
+            variants={containerVariants}
           >
-            <Link to="/register" className="btn-primary">
-              Get Started
-            </Link>
-            <Link to="/login" className="btn-secondary">
-              Sign In
-            </Link>
+            <motion.h1 
+              className="text-4xl md:text-6xl font-bold text-center text-gray-800 mb-6"
+              variants={itemVariants}
+            >
+              Understand Your <span className="text-indigo-600">Emotions</span>,<br />
+              Transform Your <span className="text-teal-600">Therapy</span>
+            </motion.h1>
+            
+            <motion.p 
+              className="text-xl text-gray-600 text-center max-w-3xl mb-10"
+              variants={itemVariants}
+            >
+              EmoPal uses facial recognition to help therapists understand your emotions in real-time, creating more effective and personalized therapeutic experiences.
+            </motion.p>
+            
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4"
+              variants={itemVariants}
+            >
+              <Link to="/register" className="btn-primary">
+                Get Started
+              </Link>
+              <Link to="/login" className="btn-secondary">
+                Sign In
+              </Link>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </AnimatePresence>
         
         {/* Decorative elements */}
         <motion.div 
@@ -206,7 +230,7 @@ const Landing = () => {
                 name: "Michael T.",
                 role: "Client"
               }
-            ].map((testimonial, index) => (
+            ].map((testimonial, index) => ( // Complete the map function
               <div key={index} className="scroll-animation bg-white p-8 rounded-lg shadow-sm relative">
                 <div className="text-indigo-500 mb-4">
                   <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="currentColor" className="opacity-20">

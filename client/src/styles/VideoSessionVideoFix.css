@@ -1,0 +1,68 @@
+/* CRITICAL FIXES FOR LOCAL VIDEO RENDERING */
+
+/* Force the local video container dimensions and prevent overflow */
+.video-session-page .local-video-container {
+  position: absolute !important;
+  z-index: 10 !important;
+  width: 180px !important;
+  height: 135px !important;
+  border-radius: 8px !important;
+  background-color: #222 !important;
+  border: 2px solid rgba(255, 255, 255, 0.7) !important;
+  overflow: hidden !important;
+  cursor: grab !important;
+}
+
+/* Reset the local-video element to be a simple container */
+.video-session-page .local-video {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  overflow: hidden !important;
+}
+
+/* CRITICAL FIX: Target the Agora video player and its internal elements */
+.local-video-container .agora_video_player,
+.local-video .agora_video_player {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: transparent !important;
+  transform: none !important;
+}
+
+/* Force Agora's video element to completely fill the player */
+.local-video-container .agora_video_player video,
+.local-video .agora_video_player video {
+  object-fit: cover !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Override any inconsistent positioning that might be applied */
+.video-session-page [class^="agora-video-player-track-cam-"] {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}

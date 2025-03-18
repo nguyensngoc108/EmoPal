@@ -840,7 +840,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     def get_user_info(self, user_id):
         """Get user info from database"""
         user = User.find_by_id(user_id)
-        print(f"User info: {user}")
+        # print(f"User info: {user}")
         if not user:
             return {"id": user_id, "name": "Unknown User"}
             

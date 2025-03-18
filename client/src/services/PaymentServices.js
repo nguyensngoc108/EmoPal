@@ -1,6 +1,11 @@
 import api from './api';
 
 const PaymentService = {
+  // Add this new method at the top of the object
+  getPaymentBySessionId: (sessionId) => {
+    return api.get(`/payments/session/${sessionId}/`);
+  },
+  
   // Create payment checkout for a session
   createPayment: (sessionId) => {
     return api.post(`payments/checkout/${sessionId}/`);
@@ -15,6 +20,12 @@ const PaymentService = {
         skip, 
         as_therapist: asTherapist 
       }
+    });
+  },
+
+  getPaymentsBySessionIds: (sessionIds) => {
+    return api.get('/payments/by-sessions', {
+      params: { session_ids: sessionIds.join(',') }
     });
   },
   

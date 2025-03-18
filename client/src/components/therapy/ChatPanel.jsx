@@ -11,28 +11,47 @@ const ChatPanel = ({ sessionId }) => {
   const [loading, setLoading] = useState(true);
   const [conversationId, setConversationId] = useState(null);
   const messagesEndRef = useRef(null);
+  const lastRefreshTimeRef = useRef(Date.now());
+  const pendingRefreshRef = useRef(null);
+  const messageHashRef = useRef('');
   
-  const MAX_MESSAGES_DISPLAYED = 100; // Limit the number of messages displayed
-  
-  // Replace the existing useEffect for auto-scrolling (around line 18)
-  useEffect(() => {
-    // Only scroll if the container exists and only scroll the chat container, not the whole page
-    if (messagesEndRef.current) {
-      // Use scrollIntoView with specific options to prevent page scrolling
-      messagesEndRef.current.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'end',
-        inline: 'nearest'
-      });
+  const MAX_MESSAGES_DISPLAYED = 100;
+
+  // Improved scroll behavior function to avoid page scroll
+  const scrollToBottom = useCallback(() => {
+    if (!messagesEndRef.current) return;
+    
+    // Get a reference to the chat container
+    const chatContainer = messagesEndRef.current.closest('.chat-messages');
+    if (!chatContainer) return;
+    
+    // Only scroll if we're already near the bottom (don't interrupt manual scrolling)
+    const isNearBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 100;
+    
+    if (isNearBottom) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
     }
-  }, [messages]);
+  }, []);
   
-  // Add this refreshMessages function around line 30
-  const refreshMessages = useCallback(async () => {
+  // Debounced message refresh function
+  const refreshMessages = useCallback(async (force = false) => {
+    // Prevent rapid successive refreshes
+    const now = Date.now();
+    if (!force && now - lastRefreshTimeRef.current < 2000) {
+      // If refresh requested too soon, schedule a delayed refresh
+      if (pendingRefreshRef.current) {
+        clearTimeout(pendingRefreshRef.current);
+      }
+      pendingRefreshRef.current = setTimeout(() => refreshMessages(true), 2000);
+      return;
+    }
+    
     try {
       if (!sessionId || !conversationId) return;
       
       console.log("Refreshing chat messages from database");
+      lastRefreshTimeRef.current = now;
+      
       const messagesResponse = await ChatService.getConversationMessages(conversationId);
       
       if (messagesResponse?.data?.messages) {
@@ -41,27 +60,26 @@ const ChatPanel = ({ sessionId }) => {
           const aTime = a.sent_at || a.timestamp;
           const bTime = b.sent_at || b.timestamp;
           return new Date(aTime) - new Date(bTime);
-        }).slice(-MAX_MESSAGES_DISPLAYED); // Keep only the most recent messages
+        }).slice(-MAX_MESSAGES_DISPLAYED);
         
-        setMessages(sortedMessages);
+        // Generate message hash to detect changes
+        const newHash = JSON.stringify(sortedMessages.map(m => m.id));
         
-        // Modify the refreshMessages function to use more targeted scrolling (around line 36)
-        setTimeout(() => {
-          if (messagesEndRef.current) {
-            // Keep the scroll within the chat container only
-            const chatContainer = document.querySelector('.chat-messages');
-            if (chatContainer) {
-              chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-          }
-        }, 100);
+        // Only update if messages have changed
+        if (newHash !== messageHashRef.current) {
+          messageHashRef.current = newHash;
+          setMessages(sortedMessages);
+          
+          // Schedule scroll after render
+          setTimeout(scrollToBottom, 100);
+        }
       }
     } catch (error) {
       console.error("Error refreshing messages:", error);
     }
-  }, [sessionId, conversationId]);
+  }, [sessionId, conversationId, scrollToBottom]);
   
-  // Load existing video conversation and messages
+  // Load initial messages
   useEffect(() => {
     if (!sessionId) return;
     
@@ -79,21 +97,8 @@ const ChatPanel = ({ sessionId }) => {
           const videoConversation = response.data.conversations[0];
           setConversationId(videoConversation._id);
           
-          // Load messages for this video conversation
-          const messagesResponse = await ChatService.getConversationMessages(
-            videoConversation._id
-          );
-          
-          if (messagesResponse.data.messages) {
-            // Sort messages by sent_at or timestamp
-            const sortedMessages = messagesResponse.data.messages.sort((a, b) => {
-              const aTime = a.sent_at || a.timestamp;
-              const bTime = b.sent_at || b.timestamp;
-              return new Date(aTime) - new Date(bTime);
-            }).slice(-MAX_MESSAGES_DISPLAYED); // Keep only the most recent messages
-            
-            setMessages(sortedMessages);
-          }
+          // Load messages for this conversation only once on init
+          await refreshMessages(true);
         }
       } catch (error) {
         console.error("Error loading video chat messages:", error);
@@ -103,67 +108,67 @@ const ChatPanel = ({ sessionId }) => {
     };
     
     loadVideoMessages();
+  }, [sessionId, refreshMessages]);
+  
+  // Set up event listeners for new messages - more targeted approach
+  useEffect(() => {
+    if (!sessionId) return;
     
-    // Listen for new messages from WebSocket - with better logging
+    // Handle new messages arriving via WebSocket
     const handleNewMessage = (event) => {
       const newMessage = event.detail;
       console.log("Video chat message received:", newMessage);
       
-      // Make sure we don't add duplicate messages
       setMessages(prev => {
-        // Check if we already have this message
-        if (prev.some(msg => 
-            // Check by ID or by content+sender combination
-            msg.id === newMessage.id || 
-            (msg.content === newMessage.content && 
-             msg.sender_id === newMessage.sender_id &&
-             Math.abs(new Date(msg.sent_at) - new Date(newMessage.sent_at)) < 5000)
-        )) {
-          console.log("Duplicate message detected, not adding");
-          return prev;
+        // Check if we already have this message by ID
+        if (prev.some(msg => msg.id === newMessage.id)) {
+          return prev; // No change needed
         }
         
+        // Check for duplicate message content (just sent)
+        if (prev.some(msg => 
+            msg.sender_id === newMessage.sender_id &&
+            msg.content === newMessage.content &&
+            Math.abs(new Date(msg.sent_at || msg.timestamp) - new Date(newMessage.sent_at || newMessage.timestamp)) < 5000
+        )) {
+          return prev; // Likely duplicate, don't add
+        }
+        
+        // Add new message and schedule scroll
+        setTimeout(scrollToBottom, 50);
+        
         // New message, add it and limit the list size
-        const updatedMessages = [...prev, newMessage].slice(-MAX_MESSAGES_DISPLAYED);
-        
-        // Scroll after render
-        setTimeout(() => {
-          const chatContainer = document.querySelector('.chat-messages');
-          if (chatContainer) {
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-          }
-        }, 100);
-        
-        return updatedMessages;
+        return [...prev, newMessage].slice(-MAX_MESSAGES_DISPLAYED);
       });
     };
     
-    // Use more specific event names to avoid conflicts
+    // Use session-specific event only for better performance
     const eventName = `video-chat-message-${sessionId}`;
     console.log(`Setting up chat message listener for: ${eventName}`);
     
     window.addEventListener(eventName, handleNewMessage);
     
-    // ALSO listen to the general event for backward compatibility
-    window.addEventListener('video-chat-message', handleNewMessage);
-    
     return () => {
       window.removeEventListener(eventName, handleNewMessage);
-      window.removeEventListener('video-chat-message', handleNewMessage);
     };
-  }, [sessionId]); // Add sessionId as dependency
+  }, [sessionId, scrollToBottom]);
   
-  // Add this useEffect to periodically refresh messages (around line 90)
+  // Periodic refresh with reduced frequency
   useEffect(() => {
-    // Refresh immediately
-    refreshMessages();
+    // No need to refresh immediately here - we already do it in initial load
     
-    // Also set up a 10-second refresh interval as backup
-    const refreshInterval = setInterval(refreshMessages, 10000);
+    // Set up a 15-second refresh interval (less frequent)
+    const refreshInterval = setInterval(() => refreshMessages(), 15000);
     
-    return () => clearInterval(refreshInterval);
+    return () => {
+      clearInterval(refreshInterval);
+      if (pendingRefreshRef.current) {
+        clearTimeout(pendingRefreshRef.current);
+      }
+    };
   }, [refreshMessages]);
   
+  // Optimized message sending
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (message.trim() === '') return;
@@ -180,8 +185,14 @@ const ChatPanel = ({ sessionId }) => {
       message_type: 'text'
     };
     
+    // Add new message to UI
     setMessages(prev => [...prev, tempMessage]);
+    
+    // Clear the input field
     setMessage('');
+    
+    // Scroll to the new message
+    setTimeout(scrollToBottom, 50);
   };
   
   return (
@@ -227,16 +238,6 @@ const ChatPanel = ({ sessionId }) => {
           Send
         </button>
       </form>
-      
-      <div className="chat-actions">
-        <button 
-          onClick={refreshMessages}
-          className="refresh-button"
-          title="Refresh Messages"
-        >
-          ↻
-        </button>
-      </div>
     </div>
   );
 };

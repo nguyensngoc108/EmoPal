@@ -12,6 +12,10 @@ const EmotionService = {
   getEmotionTrends: (days = 30) => {
     return api.get('/emotions/trends/', { params: { days } });
   },
+
+  getSessionEmotionData: (sessionId) => {
+    return api.get(`/emotions/session/${sessionId}/`);
+  },
   
   uploadAndAnalyze: (formData) => {
     return api.post('/emotions/upload/', formData, {

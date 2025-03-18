@@ -70,3 +70,35 @@ class Feedback:
         return feedback_collection.delete_one(
             {"_id": ObjectId(feedback_id), "user_id": user_id}
         )
+
+    @staticmethod
+    def find_by_session(session_id):
+        """Get feedback for a specific session"""
+        return feedback_collection.find_one({"session_id": session_id})
+    
+    @staticmethod
+    def find_feedback_stats(therapist_id):
+        """Get statistics about therapist feedback"""
+        pipeline = [
+            {"$match": {"therapist_id": therapist_id}},
+            {"$group": {
+                "_id": None,
+                "avgRating": {"$avg": "$rating"},
+                "count": {"$sum": 1},
+                "rating5": {"$sum": {"$cond": [{"$eq": ["$rating", 5]}, 1, 0]}},
+                "rating4": {"$sum": {"$cond": [{"$eq": ["$rating", 4]}, 1, 0]}},
+                "rating3": {"$sum": {"$cond": [{"$eq": ["$rating", 3]}, 1, 0]}},
+                "rating2": {"$sum": {"$cond": [{"$eq": ["$rating", 2]}, 1, 0]}},
+                "rating1": {"$sum": {"$cond": [{"$eq": ["$rating", 1]}, 1, 0]}},
+            }}
+        ]
+        result = list(feedback_collection.aggregate(pipeline))
+        return result[0] if result else {
+            "avgRating": 0,
+            "count": 0,
+            "rating5": 0,
+            "rating4": 0,
+            "rating3": 0,
+            "rating2": 0,
+            "rating1": 0
+        }

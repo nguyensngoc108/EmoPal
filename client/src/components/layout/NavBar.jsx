@@ -366,6 +366,7 @@ const NavBar = () => {
           ) : (
             // Non-authenticated user navigation
             <ul className="nav-links">
+              <li><Link to="/" className={isActive('/')}>Home</Link></li>
               <li><Link to="/login" className={isActive('/login')}>Login</Link></li>
               <li><Link to="/register" className={isActive('/register')}>Register</Link></li>
               <li><Link to="/about" className={isActive('/about')}>About</Link></li>

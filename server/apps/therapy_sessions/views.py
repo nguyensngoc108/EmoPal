@@ -5,7 +5,8 @@ from django.views.decorators.csrf import csrf_exempt
 from bson import ObjectId
 import sys
 import os
-from datetime import datetime, timedelta
+
+from datetime import datetime, timedelta, timezone
 import logging
 
 # Configure logger
@@ -19,7 +20,7 @@ from apps.payments.services import PaymentService
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from apps.users.models import User
 from apps.therapists.models import Therapist
-from apps.therapy_sessions.models import TherapySession, TherapistAvailability, SessionStatus, SessionType
+from apps.therapy_sessions.models import TherapySession, TherapistAvailability, SessionStatus, SessionType, SessionNote
 from apps.utils.media_helper import MediaStorage
 from apps.utils.image_helper import upload_to_cloudinary
 from apps.utils.auth import get_user_from_request
@@ -298,8 +299,25 @@ def book_session(request):
             }, status=400)
             
         # Convert string dates to datetime objects
-        start_time = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
-        end_time = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
+        if not isinstance(start_time, datetime):
+            # Properly handle ISO 8601 format with timezone info
+            # Python 3.7+: fromisoformat can't handle 'Z' suffix directly
+            # Remove 'Z' and add timezone info
+            if 'Z' in start_time:
+                start_time = start_time.replace('Z', '+00:00')
+            start_time = datetime.fromisoformat(start_time)
+
+        if not isinstance(end_time, datetime):
+            if 'Z' in end_time:
+                end_time = end_time.replace('Z', '+00:00')
+            end_time = datetime.fromisoformat(end_time)
+
+        # Make sure both are timezone-aware
+        if start_time.tzinfo is None:
+            # If no timezone provided, assume UTC
+            start_time = start_time.replace(tzinfo=timezone.utc)
+        if end_time.tzinfo is None:
+            end_time = end_time.replace(tzinfo=timezone.utc)
         
         # Find therapist
         therapist = None
@@ -417,15 +435,31 @@ def get_therapist_sessions(request):
                 "message": "Only therapists can access this endpoint"
             }, status=403)
             
+        # Get therapist_id from user document or lookup in therapists collection
+        therapist_id = None
+        if "therapist_id" in current_user:
+            therapist_id = str(current_user.get("therapist_id"))
+        else:
+            from apps.therapists.models import Therapist
+            therapist = Therapist.find_by_user_id(user_id)
+            if therapist:
+                therapist_id = str(therapist.get("_id"))
+                
+        if not therapist_id:
+            return JsonResponse({
+                "success": False,
+                "message": "Therapist profile not found"
+            }, status=404)
+        
         # Get query parameters
         status = request.GET.get("status")
         limit = int(request.GET.get("limit", 10))
         skip = int(request.GET.get("skip", 0))
         
-        # Get sessions
-        sessions = TherapySession.find_by_therapist(user_id, status, limit, skip)
+        # Get sessions using therapist_id
+        sessions = TherapySession.find_by_therapist(therapist_id, status, limit, skip)
         
-        # Convert ObjectIds and add user info
+        # Convert ObjectIds and add client info
         result = []
         for session in sessions:
             session = convert_object_ids(session)
@@ -434,6 +468,7 @@ def get_therapist_sessions(request):
             client = User.find_by_id(session["user_id"])
             if client:
                 session["client_name"] = client.get("username")
+                session["client_email"] = client.get("email")
                 
             result.append(session)
         
@@ -619,56 +654,56 @@ def update_session_status(request, session_id):
             "message": str(e)
         }, status=500)
 
-@csrf_exempt
-@require_http_methods(["PUT"])
-def add_session_notes(request, session_id):
-    """Add therapist notes to a session"""
-    try:
-        # Check authentication
-        current_user = get_user_from_request(request)
-        if not current_user:
-            return JsonResponse({
-                "success": False,
-                "message": "Authentication required"
-            }, status=401)
+# @csrf_exempt
+# @require_http_methods(["PUT"])
+# def add_session_notes(request, session_id):
+#     """Add therapist notes to a session"""
+#     try:
+#         # Check authentication
+#         current_user = get_user_from_request(request)
+#         if not current_user:
+#             return JsonResponse({
+#                 "success": False,
+#                 "message": "Authentication required"
+#             }, status=401)
             
-        user_id = str(current_user.get("_id"))
+#         user_id = str(current_user.get("_id"))
         
-        # Check if user is a therapist
-        if current_user.get("role") != "therapist":
-            return JsonResponse({
-                "success": False,
-                "message": "Only therapists can add session notes"
-            }, status=403)
+#         # Check if user is a therapist
+#         if current_user.get("role") != "therapist":
+#             return JsonResponse({
+#                 "success": False,
+#                 "message": "Only therapists can add session notes"
+#             }, status=403)
             
-        data = json.loads(request.body)
-        notes = data.get("notes")
+#         data = json.loads(request.body)
+#         notes = data.get("notes")
         
-        if not notes:
-            return JsonResponse({
-                "success": False,
-                "message": "Notes are required"
-            }, status=400)
+#         if not notes:
+#             return JsonResponse({
+#                 "success": False,
+#                 "message": "Notes are required"
+#             }, status=400)
             
-        # Add notes
-        result = TherapySession.add_notes(session_id, user_id, notes)
+#         # Add notes
+#         result = TherapySession.add_notes(session_id, user_id, notes)
         
-        if result.modified_count == 0:
-            return JsonResponse({
-                "success": False,
-                "message": "Session not found or you're not the therapist for this session"
-            }, status=404)
+#         if result.modified_count == 0:
+#             return JsonResponse({
+#                 "success": False,
+#                 "message": "Session not found or you're not the therapist for this session"
+#             }, status=404)
             
-        return JsonResponse({
-            "success": True,
-            "message": "Session notes added successfully"
-        })
+#         return JsonResponse({
+#             "success": True,
+#             "message": "Session notes added successfully"
+#         })
         
-    except Exception as e:
-        return JsonResponse({
-            "success": False,
-            "message": str(e)
-        }, status=500)
+#     except Exception as e:
+#         return JsonResponse({
+#             "success": False,
+#             "message": str(e)
+#         }, status=500)
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -1366,8 +1401,6 @@ def get_upcoming_sessions(request):
         user_role = current_user.get("role")
         is_therapist = user_role == "therapist"
         
-        print(f"User ID: {user_id}, Role: {user_role}")
-        
         # Get limit parameter (optional)
         limit = request.GET.get("limit")
         if limit:
@@ -1376,66 +1409,137 @@ def get_upcoming_sessions(request):
             except ValueError:
                 limit = None
         
-        # Get upcoming sessions
-        try:
-            sessions = TherapySession.get_upcoming_sessions(user_id, is_therapist=is_therapist)
+        # Get current time for comparison
+        current_time = datetime.now()
+        
+        # Handle therapist ID differently - use therapist_id from user model or lookup in therapists collection
+        if is_therapist:
+            therapist_id = None
             
-            # Handle case where no sessions are found
-            if not sessions:
+            # First check if therapist_id is in user document
+            if "therapist_id" in current_user:
+                therapist_id = current_user.get("therapist_id")
+                
+            # If not found in user document, look it up in therapists collection
+            if not therapist_id:
+                therapist = Therapist.find_by_user_id(user_id)
+                if therapist:
+                    therapist_id = therapist.get("_id")
+                    
+            if not therapist_id:
                 return JsonResponse({
-                    "success": True,
-                    "count": 0,
-                    "message": "No upcoming sessions found",
-                    "sessions": []
-                })
+                    "success": False,
+                    "message": "Therapist profile not found"
+                }, status=404)
                 
-            # Apply limit if specified
-            if limit is not None:
-                sessions = sessions[:limit]
+            # Convert therapist_id to string for consistent comparison
+            therapist_id = str(therapist_id)
             
-            # Convert ObjectIds and add other user info
-            result = []
-            for session in sessions:
-                session = convert_object_ids(session)
+            # Create query using therapist_id
+            query = {
+                "therapist_id": {"$in": [therapist_id, ObjectId(therapist_id)]},
+                "end_time": {"$gte": current_time}
+            }
+        else:
+            # For regular users, use user_id
+            try:
+                user_id_obj = ObjectId(user_id)
+            except:
+                user_id_obj = user_id
                 
-                # Add other party information
-                if is_therapist:
-                    client = User.find_by_id(session["user_id"])
-                    if client:
-                        session["client_name"] = client.get("username")
-                        session["client_email"] = client.get("email")
+            query = {
+                "user_id": {"$in": [user_id, user_id_obj]},
+                "end_time": {"$gte": current_time}
+            }
+        
+        # Execute query and get sessions
+        upcoming_sessions = list(db.therapy_sessions.find(query).sort("start_time", 1))
+        
+        # Apply limit if specified
+        if limit is not None:
+            upcoming_sessions = upcoming_sessions[:limit]
+        
+        # Process results with better ID handling
+        result = []
+        for session in upcoming_sessions:
+            session = convert_object_ids(session)
+            
+            # Add info for the other party based on role
+            if is_therapist:
+                # Get client info - handle ID format safely
+                client_id = session["user_id"]
+                client = None
+                
+                # Try both formats
+                if isinstance(client_id, str):
+                    try:
+                        client = User.find_by_id(client_id)
+                        if not client:
+                            client = User.find_by_id(ObjectId(client_id))
+                    except:
+                        pass
                 else:
-                    therapist_user = User.find_by_id(session["therapist_id"])
-                    if therapist_user:
-                        session["therapist_name"] = therapist_user.get("username")
+                    client = User.find_by_id(client_id)
+                    if not client:
+                        client = User.find_by_id(str(client_id))
+                
+                if client:
+                    # For therapists, only include minimal client info
+                    session["client_name"] = client.get("username")
+                    session["client_email"] = client.get("email")
+            else:
+                # Get therapist info - handle ID format safely
+                therapist_id = session["therapist_id"]
+                therapist_user = None
+                
+                # Try both formats
+                if isinstance(therapist_id, str):
+                    try:
+                        therapist_user = User.find_by_id(therapist_id)
+                        if not therapist_user:
+                            therapist_user = User.find_by_id(ObjectId(therapist_id))
+                    except:
+                        pass
+                else:
+                    therapist_user = User.find_by_id(therapist_id)
+                    if not therapist_user:
+                        therapist_user = User.find_by_id(str(therapist_id))
+                
+                if therapist_user:
+                    session["therapist_name"] = therapist_user.get("username")
+                    
+                    # Get therapist profile - also handle ID safely
+                    try:
+                        therapist = Therapist.find_by_user_id(therapist_id)
+                        if not therapist and isinstance(therapist_id, ObjectId):
+                            therapist = Therapist.find_by_user_id(str(therapist_id))
+                        if not therapist and isinstance(therapist_id, str):
+                            try:
+                                therapist = Therapist.find_by_user_id(ObjectId(therapist_id))
+                            except:
+                                pass
                         
-                        # Get therapist profile info if available
-                        therapist = Therapist.find_by_user_id(session["therapist_id"])
                         if therapist:
                             session["therapist_profile"] = {
                                 "title": therapist.get("title"),
                                 "display_name": therapist.get("display_name"),
                                 "specialties": therapist.get("specialties", [])
                             }
-                
-                # Add if the session has a recording
+                    except Exception as e:
+                        print(f"Error getting therapist profile: {e}")
+            
+            # Add recording info only for clients unless it's completed
+            if not is_therapist or session.get("status") == "completed":
                 session["has_recording"] = bool(session.get("recording_url"))
-                    
-                result.append(session)
             
-            return JsonResponse({
-                "success": True,
-                "count": len(result),
-                "sessions": result
-            })
+            result.append(session)
             
-        except Exception as e:
-            # Handle database errors
-            return JsonResponse({
-                "success": False,
-                "message": f"Error retrieving sessions: {str(e)}"
-            }, status=500)
-            
+        return JsonResponse({
+            "success": True,
+            "count": len(result),
+            "sessions": result
+        })
+        
     except Exception as e:
         return JsonResponse({
             "success": False,
@@ -1466,43 +1570,131 @@ def get_past_sessions(request):
             except ValueError:
                 limit = None
         
-        # Get past sessions
-        sessions = TherapySession.get_past_sessions(user_id, is_therapist=is_therapist)
+        # Get current time for comparison
+        current_time = datetime.now()
+        
+        # Handle therapist ID differently - use therapist_id from user model or lookup in therapists collection
+        if is_therapist:
+            therapist_id = None
+            
+            # First check if therapist_id is in user document
+            if "therapist_id" in current_user:
+                therapist_id = current_user.get("therapist_id")
+                
+            # If not found in user document, look it up in therapists collection
+            if not therapist_id:
+                therapist = Therapist.find_by_user_id(user_id)
+                if therapist:
+                    therapist_id = therapist.get("_id")
+                    
+            if not therapist_id:
+                return JsonResponse({
+                    "success": False,
+                    "message": "Therapist profile not found"
+                }, status=404)
+                
+            # Convert therapist_id to string for consistent comparison
+            therapist_id = str(therapist_id)
+            
+            # Create query using therapist_id
+            query = {
+                "therapist_id": {"$in": [therapist_id, ObjectId(therapist_id)]},
+                "end_time": {"$lt": current_time}
+            }
+        else:
+            # For regular users, use user_id
+            try:
+                user_id_obj = ObjectId(user_id)
+            except:
+                user_id_obj = user_id
+                
+            query = {
+                "user_id": {"$in": [user_id, user_id_obj]},
+                "end_time": {"$lt": current_time}
+            }
+        
+        # Execute query and get sessions
+        past_sessions = list(db.therapy_sessions.find(query).sort("start_time", -1))
         
         # Apply limit if specified
         if limit is not None:
-            sessions = sessions[:limit]
+            past_sessions = past_sessions[:limit]
         
-        # Convert ObjectIds and add other user info
+        # Process results with better ID handling
         result = []
-        for session in sessions:
+        for session in past_sessions:
             session = convert_object_ids(session)
             
-            # Add other party information
+            # Add info for the other party based on role
             if is_therapist:
-                client = User.find_by_id(session["user_id"])
+                # Get client info - handle ID format safely
+                client_id = session["user_id"]
+                client = None
+                
+                # Try both formats
+                if isinstance(client_id, str):
+                    try:
+                        client = User.find_by_id(client_id)
+                        if not client:
+                            client = User.find_by_id(ObjectId(client_id))
+                    except:
+                        pass
+                else:
+                    client = User.find_by_id(client_id)
+                    if not client:
+                        client = User.find_by_id(str(client_id))
+                
                 if client:
+                    # For therapists, only include minimal client info
                     session["client_name"] = client.get("username")
                     session["client_email"] = client.get("email")
             else:
-                therapist_user = User.find_by_id(session["therapist_id"])
+                # Get therapist info - handle ID format safely
+                therapist_id = session["therapist_id"]
+                therapist_user = None
+                
+                # Try both formats
+                if isinstance(therapist_id, str):
+                    try:
+                        therapist_user = User.find_by_id(therapist_id)
+                        if not therapist_user:
+                            therapist_user = User.find_by_id(ObjectId(therapist_id))
+                    except:
+                        pass
+                else:
+                    therapist_user = User.find_by_id(therapist_id)
+                    if not therapist_user:
+                        therapist_user = User.find_by_id(str(therapist_id))
+                
                 if therapist_user:
                     session["therapist_name"] = therapist_user.get("username")
                     
-                    # Get therapist profile info if available
-                    therapist = Therapist.find_by_user_id(session["therapist_id"])
-                    if therapist:
-                        session["therapist_profile"] = {
-                            "title": therapist.get("title"),
-                            "display_name": therapist.get("display_name"),
-                            "specialties": therapist.get("specialties", [])
-                        }
+                    # Get therapist profile - also handle ID safely
+                    try:
+                        therapist = Therapist.find_by_user_id(therapist_id)
+                        if not therapist and isinstance(therapist_id, ObjectId):
+                            therapist = Therapist.find_by_user_id(str(therapist_id))
+                        if not therapist and isinstance(therapist_id, str):
+                            try:
+                                therapist = Therapist.find_by_user_id(ObjectId(therapist_id))
+                            except:
+                                pass
+                        
+                        if therapist:
+                            session["therapist_profile"] = {
+                                "title": therapist.get("title"),
+                                "display_name": therapist.get("display_name"),
+                                "specialties": therapist.get("specialties", [])
+                            }
+                    except Exception as e:
+                        print(f"Error getting therapist profile: {e}")
             
-            # Add if the session has a recording
-            session["has_recording"] = bool(session.get("recording_url"))
-                
+            # Add recording info only for clients unless it's completed
+            if not is_therapist or session.get("status") == "completed":
+                session["has_recording"] = bool(session.get("recording_url"))
+            
             result.append(session)
-        
+            
         return JsonResponse({
             "success": True,
             "count": len(result),
@@ -1514,7 +1706,7 @@ def get_past_sessions(request):
             "success": False,
             "message": str(e)
         }, status=500)
-        
+
 @require_http_methods(["GET"])
 def get_therapist_availability(request, therapist_id):
     """Get availability slots for a specific therapist"""
@@ -1901,3 +2093,265 @@ def get_session_price(therapist_id, session_type, duration_hours):
         logger.error(f"Error calculating session price: {str(e)}")
         # Default fallback price
         return 75.0 * duration_hours
+
+@require_http_methods(["GET"])
+def get_session_statistics(request):
+    """Get session statistics for the current user"""
+    try:
+        # Check authentication
+        current_user = get_user_from_request(request)
+        if not current_user:
+            return JsonResponse({
+                "success": False,
+                "message": "Authentication required"
+            }, status=401)
+            
+        user_id = str(current_user.get("_id"))
+        is_therapist = current_user.get("role") == "therapist"
+        
+        # Get therapist_id if user is a therapist
+        therapist_id = None
+        if is_therapist:
+            # First check if therapist_id is in user document
+            if "therapist_id" in current_user:
+                therapist_id = str(current_user.get("therapist_id"))
+            else:
+                # Look up in therapists collection
+                from apps.therapists.models import Therapist
+                therapist = Therapist.find_by_user_id(user_id)
+                if therapist:
+                    therapist_id = str(therapist.get("_id"))
+                    
+            if not therapist_id:
+                return JsonResponse({
+                    "success": False,
+                    "message": "Therapist profile not found"
+                }, status=404)
+        
+        # Get sessions based on role
+        if is_therapist:
+            sessions = TherapySession.find_by_therapist(therapist_id)
+        else:
+            sessions = TherapySession.find_by_user(user_id)
+            
+        # Calculate basic stats
+        completed_count = sum(1 for s in sessions if s.get('status') == 'completed')
+        upcoming_count = sum(1 for s in sessions if s.get('status') in ['scheduled', 'accepted'] 
+                            and s.get('start_time') > datetime.now())
+        total_hours = sum(s.get('duration_hours', 0) for s in sessions if s.get('status') == 'completed')
+        total_spent = sum(s.get('price', 0) for s in sessions if s.get('status') == 'completed')
+        
+        # Calculate attendance, engagement, improvement metrics
+        attendance = 0
+        engagement = 0
+        improvement = 0
+        
+        if completed_count > 0:
+            # Calculate attendance rate
+            attendances = sum(1 for s in sessions if s.get('status') == 'completed' and s.get('client_joined_at'))
+            attendance = int((attendances / completed_count) * 100)
+            
+            # Calculate engagement based on session duration
+            engaged_sessions = 0
+            for s in sessions:
+                if s.get('status') == 'completed' and s.get('client_joined_at') and s.get('client_left_at'):
+                    start = s.get('client_joined_at')
+                    end = s.get('client_left_at')
+                    actual_duration = (end - start).total_seconds() / 3600
+                    planned_duration = s.get('duration_hours', 1)
+                    
+                    if actual_duration >= (planned_duration * 0.9):
+                        engaged_sessions += 1
+            
+            engagement = int((engaged_sessions / completed_count) * 100)
+            
+            # Simple improvement metric based on completed sessions count
+            improvement = min(75, completed_count * 5)
+        
+        return JsonResponse({
+            "success": True,
+            "statistics": {
+                "completedCount": completed_count,
+                "upcomingCount": upcoming_count,
+                "totalHours": total_hours,
+                "totalSpent": total_spent,
+                "progressMetrics": {
+                    "attendance": attendance,
+                    "engagement": engagement,
+                    "improvement": improvement
+                }
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": str(e)
+        }, status=500)
+
+# Add or update session note API endpoint
+@csrf_exempt
+@require_http_methods(["POST"])
+def add_session_note(request, session_id):
+    """Add a note to a session"""
+    try:
+        # Check authentication
+        current_user = get_user_from_request(request)
+        if not current_user:
+            return JsonResponse({
+                "success": False,
+                "message": "Authentication required"
+            }, status=401)
+            
+        # Check if user is a therapist
+        if current_user.get("role") != "therapist":
+            return JsonResponse({
+                "success": False,
+                "message": "Only therapists can add session notes"
+            }, status=403)
+            
+        user_id = str(current_user.get("_id"))
+        
+        # Get therapist_id using multiple approaches to ensure we find it
+        therapist_id = None
+        
+        # 1. Check if therapist_id exists directly in user model
+        if "therapist_id" in current_user:
+            therapist_id = current_user.get("therapist_id")
+            if therapist_id:
+                therapist_id = str(therapist_id)
+        
+        # 2. If not found, look up in therapists collection
+        if not therapist_id:
+            therapist = Therapist.find_by_user_id(user_id)
+            if therapist and "_id" in therapist:
+                therapist_id = str(therapist.get("_id"))
+        
+        # If we still don't have a therapist_id, return an error
+        if not therapist_id:
+            return JsonResponse({
+                "success": False,
+                "message": "Therapist profile not found"
+            }, status=404)
+        
+        # Parse request data
+        data = json.loads(request.body)
+        
+        # Get session
+        session = TherapySession.find_by_id(session_id)
+        if not session:
+            return JsonResponse({
+                "success": False,
+                "message": "Session not found"
+            }, status=404)
+        
+        # Get session's therapist_id and ensure it's a string for consistent comparison
+        session_therapist_id = str(session.get("therapist_id"))
+        
+        # Check if the therapist is associated with the session
+        if session_therapist_id != therapist_id:
+            # Try alternative format comparison
+            try:
+                # Try converting to ObjectId if possible for comparison
+                if ObjectId.is_valid(therapist_id) and ObjectId.is_valid(session_therapist_id):
+                    if ObjectId(therapist_id) != ObjectId(session_therapist_id):
+                        return JsonResponse({
+                            "success": False,
+                            "message": "Not authorized to add notes to this session"
+                        }, status=403)
+                else:
+                    return JsonResponse({
+                        "success": False,
+                        "message": "Not authorized to add notes to this session"
+                    }, status=403)
+            except:
+                return JsonResponse({
+                    "success": False,
+                    "message": "Not authorized to add notes to this session"
+                }, status=403)
+            
+        # Create note
+        note = SessionNote(
+            session_id=session_id,
+            author_id=user_id,  # Using user_id as the author
+            content=data.get("content"),
+            note_type=data.get("type", "post_session")
+        )
+        note_id = note.save()
+        
+        return JsonResponse({
+            "success": True,
+            "note_id": str(note_id),
+            "message": "Note added successfully"
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": str(e)
+        }, status=500)
+        
+@require_http_methods(["GET"])
+def get_session_notes(request, session_id):
+    """Get notes for a session"""
+    try:
+        # Check authentication
+        current_user = get_user_from_request(request)
+        if not current_user:
+            return JsonResponse({
+                "success": False,
+                "message": "Authentication required"
+            }, status=401)
+            
+        user_id = str(current_user.get("_id"))
+        is_therapist = current_user.get("role") == "therapist"
+        
+        # Get therapist_id if the user is a therapist
+        therapist_id = None
+        if is_therapist:
+            # 1. Check if therapist_id exists directly in user model
+            if "therapist_id" in current_user:
+                therapist_id = current_user.get("therapist_id")
+                if therapist_id:
+                    therapist_id = str(therapist_id)
+            # 2. If not found, look up in therapists collection
+            if not therapist_id:
+                therapist = Therapist.find_by_user_id(user_id)
+                if therapist and "_id" in therapist:
+                    therapist_id = str(therapist.get("_id"))
+        
+        # Get session
+        session = TherapySession.find_by_id(session_id)
+        if not session:
+            return JsonResponse({
+                "success": False,
+                "message": "Session not found"
+            }, status=404)
+            
+        # Check if user is authorized
+        if str(session.get("therapist_id")) != therapist_id and str(session.get("user_id")) != user_id:
+            return JsonResponse({
+                "success": False,
+                "message": "Not authorized to view this session"
+            }, status=403)
+            
+        # Get notes
+        notes = SessionNote.find_by_session(session_id)
+        notes = [convert_object_ids(note) for note in notes]
+        
+        # Add author details
+        for note in notes:
+            author = User.find_by_id(note["author_id"])
+            if author:
+                note["author"] = author.get("username")
+        
+        return JsonResponse({
+            "success": True,
+            "notes": notes
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": str(e)
+        }, status=500)

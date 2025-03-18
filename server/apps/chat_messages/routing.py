@@ -1,6 +1,7 @@
 from django.urls import re_path, path
 from apps.chat_messages.consumers import ChatConsumer, HelpChatConsumer
 from apps.therapy_sessions.consumers import VideoSessionConsumer
+from apps.ai_services.consumers import EmotionAnalysisConsumer
 
 websocket_urlpatterns = [
     # User-to-user chat
@@ -17,4 +18,6 @@ websocket_urlpatterns = [
     
     # Add new route for video sessions
     path('ws/video/<str:session_id>/<str:user_id>/', VideoSessionConsumer.as_asgi()),
+    
+    path('ws/emotion_analysis/<str:session_id>/', EmotionAnalysisConsumer.as_asgi()),
 ]

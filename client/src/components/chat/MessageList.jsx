@@ -94,7 +94,7 @@ const MessageList = ({ messages, currentUserId, conversationType }) => {
     if (messages.length > 0) {
       // console.log("Messages ownership check:");
       messages.forEach(msg => {
-        console.log(`Message ${msg.id?.substring(0,6)}: sender=${msg.sender_id}, currentUser=${currentUserId}, isOwn=${msg.sender_id === currentUserId}`);
+        // console.log(`Message ${msg.id?.substring(0,6)}: sender=${msg.sender_id}, currentUser=${currentUserId}, isOwn=${msg.sender_id === currentUserId}`);
       });
     }
   }, [messages, currentUserId]);

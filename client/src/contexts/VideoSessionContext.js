@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
 import WebSocketManager from '../services/WebSocketManager';
 
-// Add this at the very beginning, outside the component
-
 // Global connection tracking
 let globalConnectionState = {
   isConnecting: false,
@@ -13,6 +11,9 @@ let globalConnectionState = {
 const VideoSessionContext = createContext(null);
 
 export const VideoSessionProvider = ({ children }) => {
+  // Add this missing ref for the emotion analysis WebSocket
+  const wsEmotionRef = useRef(null);
+  
   // Session state
   const [sessionState, setSessionState] = useState({
     isConnected: false,
@@ -33,6 +34,7 @@ export const VideoSessionProvider = ({ children }) => {
     emotionHistory: [],
     emotionTrends: null,
     warnings: [],
+    faceDetection: null, // Add face detection coordinates
     insights: {
       current_state: '',
       suggestions: [],
@@ -65,6 +67,7 @@ export const VideoSessionProvider = ({ children }) => {
       dominantEmotion: data.dominant_emotion || null,
       valence: data.valence || 0,
       engagement: data.engagement || 0,
+      faceDetection: data.face_detection, // Add face detection data
       emotionHistory: [
         ...prev.emotionHistory, 
         {
@@ -72,7 +75,8 @@ export const VideoSessionProvider = ({ children }) => {
           emotions: data.emotions,
           dominantEmotion: data.dominant_emotion,
           valence: data.valence,
-          engagement: data.engagement
+          engagement: data.engagement,
+          faceDetection: data.face_detection // Include in history
         }
       ].slice(-50) // Keep last 50 entries
     }));
@@ -497,7 +501,29 @@ export const VideoSessionProvider = ({ children }) => {
           
         case 'emotion_update':
           if (sessionState.role === 'therapist') {
-            updateEmotionData(data.data);
+            // Update emotion data with face detection
+            updateEmotionData({
+              emotions: data.emotions || {},
+              dominant_emotion: data.dominant_emotion || 'neutral',
+              valence: data.valence || 0,
+              engagement: data.engagement || 0,
+              face_detection: data.face_detection || null // Add face detection data
+            });
+            
+            // Handle trend analysis if provided
+            if (data.trend_analysis) {
+              updateEmotionTrends(data.trend_analysis);
+            }
+            
+            // Handle therapeutic insights if provided
+            if (data.insights) {
+              updateTherapeuticInsights(data.insights);
+            }
+            
+            // Handle warnings if provided
+            if (data.warning) {
+              addEmotionWarning(data.warning);
+            }
           }
           break;
         
@@ -721,32 +747,109 @@ export const VideoSessionProvider = ({ children }) => {
   
   // Start emotion analysis with frame capture
   const startEmotionAnalysis = useCallback(() => {
-    if (sessionState.role !== 'therapist') return;
+    if (sessionState.role !== 'therapist' || !sessionState.sessionId || !sessionState.isJoined) {
+      return;
+    }
     
-    setEmotionData(prev => ({
-      ...prev,
-      isAnalyzing: true
-    }));
+    console.log("Starting emotion analysis...");
     
-    // In a real implementation, you would:
-    // 1. Start capturing video frames
-    // 2. Send them to the server for analysis
-    // 3. Process the analysis results
+    // Set up WebSocket for emotion analysis
+    const wsUrl = `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${process.env.REACT_APP_CHAT_HOST || window.location.host}/ws/emotion_analysis/${sessionState.sessionId}/`;
     
-    console.log('Starting emotion analysis');
+    const socket = new WebSocket(wsUrl);
+    wsEmotionRef.current = socket;
     
-    // Simulate sending frames periodically
+    socket.onopen = () => {
+      console.log('Emotion analysis WebSocket connected');
+      setEmotionData(prev => ({
+        ...prev,
+        isAnalyzing: true
+      }));
+    };
+    
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'emotion_update') {
+          // Update emotion data
+          updateEmotionData({
+            emotions: data.emotions || {},
+            dominant_emotion: data.dominant_emotion || 'neutral',
+            valence: data.valence || 0,
+            engagement: data.engagement || 0,
+            face_detection: data.face_detection || null
+          });
+          
+          // Handle trend analysis if provided
+          if (data.trend_analysis) {
+            updateEmotionTrends(data.trend_analysis);
+          }
+          
+          // Handle therapeutic insights if provided
+          if (data.insights) {
+            updateTherapeuticInsights(data.insights);
+          }
+          
+          // Handle warnings if provided
+          if (data.warning) {
+            addEmotionWarning(data.warning);
+          }
+        }
+      } catch (err) {
+        console.error('Error parsing emotion analysis message:', err);
+      }
+    };
+    
+    socket.onerror = (error) => {
+      console.error('Emotion analysis WebSocket error:', error);
+    };
+    
+    socket.onclose = () => {
+      console.log('Emotion analysis WebSocket closed');
+      setEmotionData(prev => ({
+        ...prev,
+        isAnalyzing: false
+      }));
+    };
+
+    // Set up frame capture
+    if (frameCapture.current) {
+      clearInterval(frameCapture.current);
+    }
+    
     frameCapture.current = setInterval(() => {
-      // Capture frame and send to server for analysis
-      // For now, just log it
-      console.log("Frame captured for analysis");
+      // Check if session is still active
+      if (!sessionState.isJoined || !wsEmotionRef.current || wsEmotionRef.current.readyState !== WebSocket.OPEN) {
+        return;
+      }
       
-      // In a real implementation:
-      // captureVideoFrame()
-      //   .then(frame => sendFrameForAnalysis(frame))
-      //   .catch(error => console.error("Frame capture error:", error));
-    }, 1000);
-  }, [sessionState.role]);
+      try {
+        // Capture frame from remote video (analyzing client's face, not therapist)
+        const remoteVideo = document.querySelector('.remote-video video');
+        if (!remoteVideo) return;
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = 320;  // Lower resolution for performance
+        canvas.height = 240;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(remoteVideo, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to data URL and send via WebSocket
+        const frameData = canvas.toDataURL('image/jpeg', 0.8);
+        
+        wsEmotionRef.current.send(JSON.stringify({
+          type: 'analyze_frame',
+          frame: frameData,
+          timestamp: Date.now()
+        }));
+      } catch (err) {
+        console.error('Error capturing frame:', err);
+      }
+    }, 1000); // Process 1 frame per second
+    
+  }, [sessionState.sessionId, sessionState.isJoined, sessionState.role, updateEmotionData, updateEmotionTrends, updateTherapeuticInsights, addEmotionWarning]);
   
   // Stop emotion analysis
   const stopEmotionAnalysis = useCallback(() => {
@@ -755,50 +858,110 @@ export const VideoSessionProvider = ({ children }) => {
       frameCapture.current = null;
     }
     
+    // Close WebSocket connection for emotion analysis
+    if (wsEmotionRef.current) {
+      if (wsEmotionRef.current.readyState === WebSocket.OPEN) {
+        wsEmotionRef.current.close();
+      }
+      wsEmotionRef.current = null;
+    }
+    
     setEmotionData(prev => ({
       ...prev,
       isAnalyzing: false
     }));
     
-    console.log('Stopping emotion analysis');
+    console.log('Emotion analysis stopped');
   }, []);
   
   // Update the disconnectFromSession function with proper cleanup
 
   const disconnectFromSession = useCallback(() => {
-    // Stop emotion analysis if it's running
+    console.log("Executing comprehensive disconnection...");
+    
+    // 1. Stop emotion analysis if it's running
     if (frameCapture.current) {
       clearInterval(frameCapture.current);
       frameCapture.current = null;
+      console.log("✓ Emotion analysis stopped");
     }
     
-    // Clean up Agora connection properly
-    if (agoraClientRef.current) {
+    // 2. Clean up local tracks with proper error handling
+    if (localStreamRef.current) {
       try {
-        // Close local tracks
-        if (localStreamRef.current) {
-          if (localStreamRef.current.audioTrack) {
-            localStreamRef.current.audioTrack.close();
-          }
-          if (localStreamRef.current.videoTrack) {
-            localStreamRef.current.videoTrack.close();
-          }
+        // Close audio track if it exists
+        if (localStreamRef.current.audioTrack) {
+          localStreamRef.current.audioTrack.close();
+          console.log("✓ Local audio track closed");
         }
         
-        // Leave the channel
-        agoraClientRef.current.leave().catch(error => {
-          console.warn("Error leaving Agora channel:", error);
-        });
-        agoraClientRef.current = null;
+        // Close video track if it exists
+        if (localStreamRef.current.videoTrack) {
+          localStreamRef.current.videoTrack.close();
+          console.log("✓ Local video track closed");
+        }
+        
+        // Clear the reference
+        localStreamRef.current = null;
       } catch (err) {
-        console.error("Error during Agora cleanup:", err);
+        console.error("Error closing local tracks:", err);
       }
     }
     
-    // Close WebSocket
-    wsManager.current.disconnect();
+    // 3. Clean up remote tracks
+    if (remoteStreamRef.current) {
+      try {
+        // Handle remote audio
+        if (remoteStreamRef.current.audioTrack) {
+          remoteStreamRef.current.audioTrack.stop();
+          console.log("✓ Remote audio track stopped");
+        }
+        
+        // Handle remote video
+        if (remoteStreamRef.current.videoTrack) {
+          remoteStreamRef.current.videoTrack.stop();
+          console.log("✓ Remote video track stopped");
+        }
+        
+        // Clear the reference
+        remoteStreamRef.current = null;
+      } catch (err) {
+        console.error("Error stopping remote tracks:", err);
+      }
+    }
     
-    // Reset state
+    // 4. Leave Agora channel with proper error handling
+    if (agoraClientRef.current) {
+      try {
+        agoraClientRef.current.leave().then(() => {
+          console.log("✓ Successfully left Agora channel");
+        }).catch(error => {
+          console.warn("Error leaving Agora channel:", error);
+        }).finally(() => {
+          agoraClientRef.current = null;
+        });
+      } catch (err) {
+        console.error("Error during Agora cleanup:", err);
+        agoraClientRef.current = null;
+      }
+    }
+    
+    // 5. Close WebSocket connection with logging
+    try {
+      wsManager.current.disconnect();
+      console.log("✓ WebSocket disconnected");
+    } catch (wsError) {
+      console.error("Error disconnecting WebSocket:", wsError);
+    }
+    
+    // 6. Clean up any browser memory by suggesting garbage collection
+    try {
+      if (window.gc) window.gc();
+    } catch (e) {
+      // gc might not be available
+    }
+    
+    // 7. Reset all state
     setSessionState({
       isConnected: false,
       isJoined: false,
@@ -831,7 +994,15 @@ export const VideoSessionProvider = ({ children }) => {
       isScreenSharing: false
     });
     
-    console.log('Disconnected from session');
+    // 8. Remove from localStorage to allow new connections
+    localStorage.removeItem('videoSessionTabId');
+    localStorage.removeItem('videoSessionActive');
+    
+    console.log('✓ Fully disconnected from session');
+    
+    // 9. Dispatch global event that app can listen to
+    window.dispatchEvent(new CustomEvent('video-session-disconnected'));
+    
   }, []);
   
   // Send chat message
@@ -845,6 +1016,11 @@ export const VideoSessionProvider = ({ children }) => {
       if (frameCapture.current) {
         clearInterval(frameCapture.current);
       }
+      
+      if (wsEmotionRef.current) {
+        wsEmotionRef.current.close();
+      }
+      
       wsManager.current.disconnect();
     };
   }, []);
@@ -953,6 +1129,115 @@ export const VideoSessionProvider = ({ children }) => {
     }
   }, []);
   
+  // Add this new function to handle video annotations
+  const applyEmotionOverlay = useCallback((videoElement, emotionData) => {
+    if (!videoElement || !emotionData || !emotionData.faces || !emotionData.faces.length) {
+      return;
+    }
+    
+    // Find or create overlay container
+    let overlayContainer = videoElement.parentElement.querySelector('.emotion-overlay');
+    if (!overlayContainer) {
+      overlayContainer = document.createElement('div');
+      overlayContainer.className = 'emotion-overlay';
+      overlayContainer.style.position = 'absolute';
+      overlayContainer.style.top = '0';
+      overlayContainer.style.left = '0';
+      overlayContainer.style.width = '100%';
+      overlayContainer.style.height = '100%';
+      overlayContainer.style.pointerEvents = 'none';
+      
+      videoElement.parentElement.appendChild(overlayContainer);
+    }
+    
+    // Clear previous annotations
+    overlayContainer.innerHTML = '';
+    
+    // Add annotations for each detected face
+    emotionData.faces.forEach(face => {
+      const { x, y, width, height } = face.position;
+      const { dominantEmotion, valence } = face;
+      
+      // Convert to relative coordinates
+      const relX = x / videoElement.videoWidth;
+      const relY = y / videoElement.videoHeight;
+      const relWidth = width / videoElement.videoWidth;
+      const relHeight = height / videoElement.videoHeight;
+      
+      // Create the face rectangle
+      const faceRect = document.createElement('div');
+      faceRect.className = `face-rect ${dominantEmotion}`;
+      faceRect.style.position = 'absolute';
+      faceRect.style.left = `${relX * 100}%`;
+      faceRect.style.top = `${relY * 100}%`;
+      faceRect.style.width = `${relWidth * 100}%`;
+      faceRect.style.height = `${relHeight * 100}%`;
+      faceRect.style.border = `2px solid ${getEmotionColor(dominantEmotion)}`;
+      faceRect.style.boxSizing = 'border-box';
+      
+      // Create emotion label
+      const label = document.createElement('div');
+      label.className = 'emotion-label';
+      label.textContent = dominantEmotion;
+      label.style.position = 'absolute';
+      label.style.top = '-25px';
+      label.style.left = '0';
+      label.style.backgroundColor = getEmotionColor(dominantEmotion);
+      label.style.color = 'white';
+      label.style.padding = '2px 6px';
+      label.style.borderRadius = '4px';
+      label.style.fontSize = '12px';
+      
+      faceRect.appendChild(label);
+      overlayContainer.appendChild(faceRect);
+      
+      // Add valence/engagement indicators
+      const indicators = document.createElement('div');
+      indicators.className = 'emotion-indicators';
+      indicators.style.position = 'absolute';
+      indicators.style.right = '-10px';
+      indicators.style.top = '0';
+      indicators.style.height = '100%';
+      indicators.style.width = '8px';
+      
+      // Valence indicator (red to green)
+      const valenceIndicator = document.createElement('div');
+      valenceIndicator.style.position = 'absolute';
+      valenceIndicator.style.left = '0';
+      valenceIndicator.style.width = '8px';
+      valenceIndicator.style.height = '50%';
+      valenceIndicator.style.background = 'linear-gradient(to bottom, red, yellow, green)';
+      
+      // Valence marker
+      const valenceMarker = document.createElement('div');
+      valenceMarker.style.position = 'absolute';
+      valenceMarker.style.left = '-4px';
+      valenceMarker.style.width = '16px';
+      valenceMarker.style.height = '2px';
+      valenceMarker.style.backgroundColor = 'white';
+      valenceMarker.style.top = `${(1 - (valence + 1) / 2) * 50}%`;
+      
+      valenceIndicator.appendChild(valenceMarker);
+      indicators.appendChild(valenceIndicator);
+      faceRect.appendChild(indicators);
+    });
+  }, []);
+
+  // Helper function to get emotion color
+  const getEmotionColor = (emotion) => {
+    const colors = {
+      happy: '#4CAF50',
+      sad: '#2196F3',
+      angry: '#F44336',
+      fear: '#FF9800',
+      neutral: '#9E9E9E',
+      surprise: '#9C27B0',
+      disgust: '#795548'
+    };
+    
+    return colors[emotion] || '#9E9E9E';
+  };
+
   const value = {
     sessionState,
     emotionData,

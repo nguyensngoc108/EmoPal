@@ -758,7 +758,7 @@ const ChatContainer = ({
           setSessionDetails(sessionData);
           
           setIsSessionActive(
-            sessionData.status !== "completed" && 
+            // sessionData.status !== "completed" && 
             sessionData.status !== "cancelled" && 
             sessionData.status !== "missed"
           );
@@ -766,7 +766,7 @@ const ChatContainer = ({
           // Only show video UI elements if this specific session is video type
           if (sessionData.session_type === "video" && 
               sessionData.payment_confirmed === true &&
-              (sessionData.status === "scheduled" || sessionData.status === "in_progress")) {
+              (sessionData.status === "scheduled" || sessionData.status === "in_progress" || sessionData.status === "completed")) {
             setShowVideoCallBanner(true);
           } else {
             // Explicitly hide video UI for non-video sessions

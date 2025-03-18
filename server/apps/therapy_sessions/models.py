@@ -919,3 +919,22 @@ class TherapyPlan:
         )
         
         return session_id
+
+# Add a new model for session notes with type support
+class SessionNote:
+    def __init__(self, session_id, author_id, content, note_type='post_session'):
+        self.session_id = session_id
+        self.author_id = author_id
+        self.content = content
+        self.note_type = note_type  # 'preparation', 'in_session', 'post_session'
+        self.created_at = datetime.utcnow()
+        
+    def save(self):
+        note_data = self.__dict__
+        result = db.session_notes.insert_one(note_data)
+        return result.inserted_id
+        
+    @staticmethod
+    def find_by_session(session_id):
+        """Get all notes for a specific session"""
+        return list(db.session_notes.find({"session_id": session_id}).sort("created_at", 1))

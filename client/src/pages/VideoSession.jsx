@@ -9,9 +9,12 @@ import ChatPanel from '../components/therapy/ChatPanel';
 import TherapistInsightPanel from '../components/therapy/TherapistInsightPanel';
 import SessionInfo from '../components/therapy/SessionInfo.jsx';
 // create css file 
+import '../styles/VideoSessionVideoFix.css'; // Add this specific fix
 import '../styles/VideoSession.css'; // Import your CSS file
 import '../styles/VideoSessionFixes.css'; // Add this new import
 import PermissionRequest from '../components/therapy/PermissionRequest'; // Add imports
+import { useLocation } from 'react-router-dom';
+import RemoteVideoAnalyzer from '../components/therapy/RemoteVideoAnalyzer';
 
 const VideoSessionContent = () => {
   const { sessionId } = useParams();
@@ -367,12 +370,41 @@ const VideoSessionContent = () => {
 
   const handleLeaveSession = async () => {
     try {
+      console.log("Initiating session leaving procedure");
+      
+      // First update the session status in database
       await SessionService.updateSessionStatus(sessionId, 'completed');
+      
+      // Stop emotion analysis before disconnecting
       stopEmotionAnalysis();
+      
+      // Forcefully close all media tracks first
+      if (localStreamRef.current) {
+        console.log("Closing local media tracks");
+        if (localStreamRef.current.audioTrack) {
+          localStreamRef.current.audioTrack.close();
+          console.log("Audio track closed");
+        }
+        if (localStreamRef.current.videoTrack) {
+          localStreamRef.current.videoTrack.close();
+          console.log("Video track closed");
+        }
+      }
+      
+      // Then disconnect from the session (WebSocket, Agora)
+      console.log("Disconnecting from session");
       disconnectFromSession();
-      navigate('/sessions');
+      
+      // Brief timeout to ensure disconnection completes before navigation
+      setTimeout(() => {
+        // Navigate only after disconnection
+        console.log("Navigation to sessions page");
+        navigate('/sessions');
+      }, 200);
     } catch (error) {
       console.error('Error ending session:', error);
+      // Still navigate away even if there's an error
+      navigate('/sessions');
     }
   };
 
@@ -412,8 +444,23 @@ const VideoSessionContent = () => {
     let isDragging = false;
     let offsetX, offsetY;
     
+    // Prevent all transitions during drag to eliminate flickering
+    const disableTransitions = () => {
+      selfViewContainer.style.transition = 'none';
+    };
+    
+    const restoreTransitions = () => {
+      // Restore transitions after drag is complete
+      setTimeout(() => {
+        selfViewContainer.style.transition = 'box-shadow 0.2s';
+      }, 50);
+    };
+    
     const handleMouseDown = (e) => {
-      e.preventDefault(); // Prevent text selection during drag
+      // Prevent events from bubbling to parent elements
+      e.preventDefault();
+      e.stopPropagation();
+      
       isDragging = true;
       
       // Get the current offset from the mouse position to the container's edge
@@ -421,11 +468,17 @@ const VideoSessionContent = () => {
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
       
+      // Disable transitions immediately on drag start
+      disableTransitions();
       selfViewContainer.style.cursor = 'grabbing';
     };
     
     const handleMouseMove = (e) => {
       if (!isDragging) return;
+      
+      // Stop event propagation to prevent browser scroll behavior
+      e.preventDefault();
+      e.stopPropagation();
       
       // Get the container boundaries
       const videoContainer = document.querySelector('.video-container');
@@ -437,32 +490,52 @@ const VideoSessionContent = () => {
       
       // Keep within boundaries
       const maxX = containerRect.width - selfViewContainer.offsetWidth;
-      const maxY = containerRect.height - selfViewContainer.offsetHeight - 80; // Add extra space for controls
+      const maxY = containerRect.height - selfViewContainer.offsetHeight - 80;
       
       newX = Math.max(0, Math.min(newX, maxX));
       newY = Math.max(0, Math.min(newY, maxY));
       
-      // CRITICAL FIX: Override ALL position properties to ensure proper positioning
-      selfViewContainer.style.position = 'absolute';
-      selfViewContainer.style.left = `${newX}px`;
-      selfViewContainer.style.top = `${newY}px`;
-      selfViewContainer.style.right = 'auto';
-      selfViewContainer.style.bottom = 'auto';
-      selfViewContainer.style.transform = 'none'; // Prevent CSS transforms from interfering
+      // CRITICAL FIX: Apply styles directly with !important to override any conflicts
+      // Use a single style update operation to minimize reflows
+      selfViewContainer.style.cssText = `
+        position: absolute !important;
+        left: ${newX}px !important;
+        top: ${newY}px !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        transition: none !important;
+        z-index: 20 !important;
+        cursor: grabbing !important;
+      `;
       
-      // Update state for persistence
-      setSelfViewPosition({ x: newX, y: newY });
+      // CRITICAL: Do NOT update React state during drag - this causes flickering
+      // Only store the final position when the drag ends
     };
     
     const handleMouseUp = () => {
-      if (isDragging) {
-        isDragging = false;
-        selfViewContainer.style.cursor = 'grab';
-      }
+      if (!isDragging) return;
+      
+      // Get final position before ending drag
+      const rect = selfViewContainer.getBoundingClientRect();
+      const videoContainer = document.querySelector('.video-container');
+      const containerRect = videoContainer.getBoundingClientRect();
+      
+      // Calculate relative position
+      const finalX = rect.left - containerRect.left;
+      const finalY = rect.top - containerRect.top;
+      
+      // Only update React state once at the end of drag
+      setSelfViewPosition({ x: finalX, y: finalY });
+      
+      isDragging = false;
+      restoreTransitions();
+      selfViewContainer.style.cursor = 'grab';
     };
     
     // Support for touch devices
     const handleTouchStart = (e) => {
+      if (e.touches.length !== 1) return;
       const touch = e.touches[0];
       const mouseEvent = new MouseEvent('mousedown', {
         clientX: touch.clientX,
@@ -472,7 +545,8 @@ const VideoSessionContent = () => {
     };
     
     const handleTouchMove = (e) => {
-      if (!isDragging) return;
+      if (!isDragging || e.touches.length !== 1) return;
+      e.preventDefault(); // Prevent page scrolling during touch drag
       const touch = e.touches[0];
       const mouseEvent = new MouseEvent('mousemove', {
         clientX: touch.clientX,
@@ -486,11 +560,11 @@ const VideoSessionContent = () => {
     };
     
     // Add all event listeners
-    selfViewContainer.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mousemove', handleMouseMove);
+    selfViewContainer.addEventListener('mousedown', handleMouseDown, { passive: false });
+    document.addEventListener('mousemove', handleMouseMove, { passive: false });
     document.addEventListener('mouseup', handleMouseUp);
-    selfViewContainer.addEventListener('touchstart', handleTouchStart);
-    document.addEventListener('touchmove', handleTouchMove);
+    selfViewContainer.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd);
     
     return () => {
@@ -542,6 +616,68 @@ const VideoSessionContent = () => {
     }
   }, [selfViewPosition]);
 
+  // Add this useEffect after your other effects
+
+  // Prevent page scrolling when the component mounts
+  useEffect(() => {
+    // Save original body style to restore later
+    const originalStyle = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      height: document.body.style.height,
+      width: document.body.style.width
+    };
+    
+    // Prevent scrolling on body
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+    
+    // Scroll to top to ensure consistent position
+    window.scrollTo(0, 0);
+    
+    return () => {
+      // Restore original body style when component unmounts
+      document.body.style.overflow = originalStyle.overflow;
+      document.body.style.position = originalStyle.position;
+      document.body.style.height = originalStyle.height;
+      document.body.style.width = originalStyle.width;
+    };
+  }, []);
+
+  // Add this useEffect inside VideoSessionContent component after other effects
+  useEffect(() => {
+    // This is a cleanup function that runs when component unmounts
+    // or when dependencies change
+    return () => {
+      console.log("VideoSession component unmounting - performing cleanup");
+      
+      // Stop emotion analysis if it's running
+      if (typeof stopEmotionAnalysis === 'function') {
+        stopEmotionAnalysis();
+      }
+      
+      // Forcefully close all media tracks
+      if (localStreamRef.current) {
+        if (localStreamRef.current.audioTrack) {
+          localStreamRef.current.audioTrack.close();
+        }
+        if (localStreamRef.current.videoTrack) {
+          localStreamRef.current.videoTrack.close();
+        }
+      }
+      
+      // Close WebSocket and leave Agora channel
+      disconnectFromSession();
+      
+      // Also dispatch a cleanup event that other components can listen for
+      window.dispatchEvent(new CustomEvent('video-session-cleanup', {
+        detail: { sessionId }
+      }));
+    };
+  }, [sessionId, disconnectFromSession, stopEmotionAnalysis]); // Add all dependencies
+
   // Render different UI based on role
   // Update the therapist view rendering
   if (sessionState.role === 'therapist') {
@@ -570,6 +706,7 @@ const VideoSessionContent = () => {
                   </div>
                 }
                 <div ref={remoteVideoRef} className="video-element" />
+                {sessionState.isJoined && sessionState.role === 'therapist' && <RemoteVideoAnalyzer />}
               </div>
               
               {/* Completely separate local video container */}
@@ -604,8 +741,7 @@ const VideoSessionContent = () => {
             
             {/* Side panel with better layout */}
             <div className={`side-panel ${sidePanelVisible ? 'visible' : 'hidden'}`}>
-              <TherapistInsightPanel emotionData={emotionData} />
-              <ChatPanel sessionId={sessionId} />
+              <TherapistInsightPanel emotionData={emotionData} sessionId={sessionId} />
             </div>
           </div>
           
