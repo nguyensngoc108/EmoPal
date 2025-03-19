@@ -102,7 +102,7 @@ const TherapistCard = ({ therapist, onViewProfile, onBookSession }) => {
               View Profile
             </button>
             <button 
-              onClick={() => onBookSession(therapist)}
+              onClick={onViewProfile}
               className="flex-1 px-4 py-2 border border-indigo-600 text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors text-sm font-medium"
             >
               Book a Session

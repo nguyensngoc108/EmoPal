@@ -6,6 +6,10 @@ urlpatterns = [
     path("upcoming/", views.get_upcoming_sessions, name="get_upcoming_sessions"),
     path("past/", views.get_past_sessions, name="get_past_sessions"),
     path("statistics/", views.get_session_statistics, name="get_session_statistics"),
+    
+    path('<str:session_id>/recordings', views.get_session_recordings, name='get_session_recordings'),
+    path('recordings/<str:recording_id>', views.get_recording_details, name='get_recording_details'),
+
     # Regular routes
     path("<str:session_id>/notes/", views.get_session_notes, name="get_session_notes"),
     path("book/", views.book_session, name="book_session"),
@@ -39,6 +43,8 @@ urlpatterns = [
 
     # The most generic route must be last
     path("<str:session_id>/", views.get_session_details, name="get_session_details"),
+    path('<str:session_id>/recordings/upload', views.upload_session_recording, name='upload_session_recording'),
+
     
     # Add this to the urlpatterns list
 

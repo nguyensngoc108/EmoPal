@@ -12,7 +12,7 @@ const ConversationList = ({
   activeConversation,
   onSelectConversation
 }) => {
-  // console.log("ConversationList rendering:", conversations);
+
   
   return (
     <div className="h-full flex flex-col">

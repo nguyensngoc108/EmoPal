@@ -1,7 +1,7 @@
 import React from 'react';
 
 const PreferencesStep = ({ 
-  preferences, 
+  values, 
   onChange, 
   onNext, 
   onBack 
@@ -30,14 +30,14 @@ const PreferencesStep = ({
   ];
   
   const handleLanguageChange = (language) => {
-    const newLanguages = [...(preferences.preferredLanguages || [])];
+    const currentLanguages = [...(values.preferredLanguages || [])];
     
-    if (newLanguages.includes(language)) {
+    if (currentLanguages.includes(language)) {
       // Remove if already selected
-      onChange('preferredLanguages', newLanguages.filter(l => l !== language));
+      onChange('preferredLanguages', currentLanguages.filter(l => l !== language));
     } else {
       // Add if not selected
-      onChange('preferredLanguages', [...newLanguages, language]);
+      onChange('preferredLanguages', [...currentLanguages, language]);
     }
   };
 
@@ -54,7 +54,7 @@ const PreferencesStep = ({
             <button
               key={option.id}
               className={`px-4 py-2 rounded-full border ${
-                preferences.preferredGender === option.id
+                values.preferredGender === option.id
                   ? 'bg-indigo-600 text-white border-indigo-600'
                   : 'border-gray-300 hover:border-indigo-400'
               }`}
@@ -74,7 +74,7 @@ const PreferencesStep = ({
             <button
               key={option.id}
               className={`px-4 py-2 rounded-md border text-left ${
-                preferences.preferredApproach === option.id
+                values.preferredApproach === option.id
                   ? 'bg-indigo-600 text-white border-indigo-600'
                   : 'border-gray-300 hover:border-indigo-400'
               }`}
@@ -94,7 +94,7 @@ const PreferencesStep = ({
             <button
               key={option.id}
               className={`px-4 py-2 rounded-full border ${
-                preferences.preferredLanguages?.includes(option.id)
+                values.preferredLanguages?.includes(option.id)
                   ? 'bg-indigo-600 text-white border-indigo-600'
                   : 'border-gray-300 hover:border-indigo-400'
               }`}
@@ -116,12 +116,12 @@ const PreferencesStep = ({
             max="300" 
             step="10"
             className="w-full accent-indigo-600"
-            value={preferences.priceRange?.[1] || 200}
+            value={values.priceRange?.[1] || 200}
             onChange={(e) => onChange('priceRange', [50, parseInt(e.target.value)])}
           />
           <div className="flex justify-between text-gray-600 text-sm mt-2">
             <span>$50</span>
-            <span>${preferences.priceRange?.[1] || 200}</span>
+            <span>${values.priceRange?.[1] || 200}</span>
           </div>
         </div>
       </div>

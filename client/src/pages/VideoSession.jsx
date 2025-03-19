@@ -20,6 +20,7 @@ const VideoSessionContent = () => {
   const { sessionId } = useParams();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+// In VideoSession.jsx, update the hook destructuring:
   const { 
     sessionState, 
     emotionData,
@@ -30,10 +31,14 @@ const VideoSessionContent = () => {
     toggleAudio,
     toggleVideo,
     toggleScreenSharing,
-    localStreamRef,      // Add this
-    remoteStreamRef,     // Add this
-    sendChatMessage,     // Add this
-    forceReconnectVideo  // Add this
+    localStreamRef,
+    remoteStreamRef,
+    sendChatMessage,
+    forceReconnectVideo,
+    // Add these missing props:
+    recordingState,
+    startRecording,
+    stopRecording
   } = useVideoSession();
   
   const [sessionDetails, setSessionDetails] = useState(null);
@@ -82,6 +87,24 @@ const VideoSessionContent = () => {
     };
   }, []);
 
+  // Add this at the beginning of the VideoSession component:
+  useEffect(() => {
+    // Prevent component unmounting during recording by catching navigation attempts
+    const beforeUnloadListener = (e) => {
+      if (window._recordingJustStarted || recordingState?.isRecording) {
+        e.preventDefault();
+        e.returnValue = "Recording in progress. Are you sure you want to leave?";
+        return e.returnValue;
+      }
+    };
+    
+    window.addEventListener('beforeunload', beforeUnloadListener);
+    
+    return () => {
+      window.removeEventListener('beforeunload', beforeUnloadListener);
+    };
+  }, []);
+
   // Initialize session
   useEffect(() => {
     const initializeSession = async () => {
@@ -99,7 +122,7 @@ const VideoSessionContent = () => {
         // const isTherapist = currentUser.user.id === session.therapist_id;
         const role = currentUser?.user?.role === 'therapist' ? 'therapist' : 'client';
         
-        console.log(`Initializing video session as ${role}`);
+
         
         // Connect to session with the determined role
         await connectToSession(sessionId, currentUser.user.id, role);
@@ -116,17 +139,29 @@ const VideoSessionContent = () => {
     initializeSession();
   }, [sessionId, currentUser, connectToSession, navigate, connectionAttempted]);
 
-  // Session timer
+  // Replace the existing session timer useEffect with this improved version
   useEffect(() => {
     if (!sessionDetails?.end_time) return;
     
     const endTime = new Date(sessionDetails.end_time).getTime();
     
+    // CRITICAL FIX: Add a minimum session duration of 5 minutes from now
+    // This prevents premature timeouts when waiting for participants
+    const minimumEndTime = Date.now() + (5 * 60 * 1000); // 5 minutes from now
+    const effectiveEndTime = Math.max(endTime, minimumEndTime);
+    
+
+    
     const timerInterval = setInterval(() => {
       const now = new Date().getTime();
-      const difference = endTime - now;
+      const difference = effectiveEndTime - now;
       
-      if (difference <= 0) {
+      // CRITICAL FIX: Only timeout if both users have joined and then time expires
+      // OR if a very long time has passed (30+ minutes) waiting for the second user
+      const bothJoined = sessionState.isJoined && remoteStreamRef.current;
+      const longWaitExpired = (now - Date.now()) > (30 * 60 * 1000); // 30 minutes
+      
+      if (difference <= 0 && (bothJoined || longWaitExpired)) {
         clearInterval(timerInterval);
         setTimeRemaining(null);
         handleSessionTimeout();
@@ -136,11 +171,29 @@ const VideoSessionContent = () => {
       // Format remaining time
       const hours = Math.floor(difference / (1000 * 60 * 60));
       const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-      setTimeRemaining(`${hours}h ${minutes}m remaining`);
-    }, 30000); // Update every 30 seconds
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+      
+      // Show more detailed time when less than 5 minutes remain
+      if (hours === 0 && minutes < 5) {
+        setTimeRemaining(`${minutes}m ${seconds}s remaining`);
+      } else {
+        setTimeRemaining(`${hours}h ${minutes}m remaining`);
+      }
+    }, 1000); // Update every second instead of every 30 seconds for more accuracy
     
     return () => clearInterval(timerInterval);
-  }, [sessionDetails]);
+  }, [sessionDetails, sessionState.isJoined, remoteStreamRef.current]);
+
+  // Also modify the handleSessionTimeout function for better messaging:
+  const handleSessionTimeout = () => {
+    // Check if both users ever connected
+    if (remoteStreamRef.current) {
+      alert("Your session time has ended. You'll be redirected to the sessions page.");
+    } else {
+      alert("The other participant didn't join the session in time. You'll be redirected to the sessions page.");
+    }
+    handleLeaveSession();
+  };
 
   // Auto-start analytics for therapist
   useEffect(() => {
@@ -363,12 +416,15 @@ const VideoSessionContent = () => {
     }
   };
 
-  const handleSessionTimeout = () => {
-    alert("Your session time has ended. You'll be redirected to the sessions page.");
-    handleLeaveSession();
-  };
-
   const handleLeaveSession = async () => {
+    // Prevent leaving during recording
+    if (window._recordingJustStarted || (recordingState && recordingState.isRecording)) {
+      const confirmed = window.confirm(
+        "Recording in progress. Leaving now will stop the recording. Are you sure?"
+      );
+      if (!confirmed) return;
+    }
+    
     try {
       console.log("Initiating session leaving procedure");
       
@@ -653,6 +709,11 @@ const VideoSessionContent = () => {
     return () => {
       console.log("VideoSession component unmounting - performing cleanup");
       
+      if (window._recordingJustStarted || (recordingState && recordingState.isRecording)) {
+        console.log("Skipping cleanup during active recording");
+        return; // Don't perform cleanup during recording
+      }
+      
       // Stop emotion analysis if it's running
       if (typeof stopEmotionAnalysis === 'function') {
         stopEmotionAnalysis();
@@ -884,3 +945,4 @@ const VideoSessionPage = () => (
 );
 
 export default VideoSessionPage;
+

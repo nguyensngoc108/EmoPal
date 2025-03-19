@@ -5,6 +5,7 @@ import SessionService from '../services/SessionServices';
 import PaymentService from '../services/PaymentServices';
 import FeedbackService from '../services/FeedbackServices.js';
 import EmotionService from '../services/EmotionServices';
+import RecordingList from '../components/therapy/RecordingList';
 import {
   CalendarIcon, ClockIcon, VideoCameraIcon, ChatBubbleLeftRightIcon,
   CreditCardIcon, UserIcon, DocumentTextIcon, ChartBarIcon, StarIcon,
@@ -116,7 +117,7 @@ const [noteType, setNoteType] = useState(() => {
         }
         
         const sessionData = sessionResponse.data.session;
-        console.log('Session Data:', sessionData);
+
         setSession(sessionData);
 
         // Only fetch payment details if the user is NOT a therapist
@@ -460,6 +461,19 @@ useEffect(() => {
               </button>
             </>
           )}
+
+          {/* Add a new tab for recordings */}
+          <button
+            onClick={() => setTabActive("recordings")}
+            className={`mr-8 py-4 px-1 font-medium text-sm transition-colors ${
+              tabActive === "recordings"
+                ? "text-indigo-600"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <VideoCameraIcon className="h-5 w-5 inline mr-2" />
+            Recordings
+          </button>
         </nav>
       </div>
 
@@ -1169,6 +1183,33 @@ useEffect(() => {
                 </motion.div>
               </div>
             )}
+          </motion.div>
+        )}
+
+        {/* Recordings Tab */}
+        {tabActive === "recordings" && (
+          <motion.div 
+            variants={tabVariants}
+            initial="initial"
+            animate="in"
+            exit="out"
+            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Session Recordings
+              </h2>
+              
+              {isTherapist && (
+                <div className="text-sm text-gray-500">
+                  Recordings are automatically analyzed for emotional patterns
+                </div>
+              )}
+            </div>
+            
+            <div className="p-6">
+              <RecordingList sessionId={sessionId} />
+            </div>
           </motion.div>
         )}
       </div>

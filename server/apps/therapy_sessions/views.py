@@ -1,13 +1,16 @@
 import json
+import time
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from bson import ObjectId
 import sys
 import os
-
+import tempfile
 from datetime import datetime, timedelta, timezone
 import logging
+from apps.utils.emotion_analysis import analyze_image, analyze_video
+from apps.utils.cloudinary_helper import upload_file_to_cloudinary
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -764,10 +767,12 @@ def cancel_session(request, session_id):
         
 
 # Add this new function to the sessions views
+# Fix the incomplete upload_session_recording function
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def upload_session_recording(request, session_id):
-    """Upload a session recording"""
+    """Upload and process a therapy session recording"""
     try:
         # Check authentication
         current_user = get_user_from_request(request)
@@ -778,7 +783,32 @@ def upload_session_recording(request, session_id):
             }, status=401)
             
         user_id = str(current_user.get("_id"))
+        user_role = current_user.get("role")
+        is_therapist = user_role == "therapist"
         username = current_user.get("username")
+        
+        # Get therapist_id if user is a therapist
+        if is_therapist:
+            therapist_id = None
+            
+            # First check if therapist_id is in user document
+            if "therapist_id" in current_user:
+                therapist_id = str(current_user.get("therapist_id"))
+                
+            # If not found in user document, look it up in therapists collection
+            if not therapist_id:
+                therapist = db.therapists.find_one({"user_id": user_id})
+                if therapist:
+                    therapist_id = str(therapist.get("_id"))
+                    
+            if not therapist_id:
+                return JsonResponse({
+                    "success": False,
+                    "message": "Therapist profile not found"
+                }, status=404)
+                
+            # Convert therapist_id to string for consistent comparison
+            therapist_id = str(therapist_id)
         
         # Check if user is associated with this session
         session = TherapySession.find_by_id(session_id)
@@ -789,10 +819,10 @@ def upload_session_recording(request, session_id):
             }, status=404)
             
         # Only allow the therapist to upload recordings
-        if str(session["therapist_id"]) != user_id:
+        if is_therapist and str(session.get("therapist_id")) != therapist_id:
             return JsonResponse({
                 "success": False,
-                "message": "Only the therapist can upload session recordings"
+                "message": "Only the therapist for this session can upload recordings"
             }, status=403)
             
         if 'recording_file' in request.FILES:
@@ -805,52 +835,75 @@ def upload_session_recording(request, session_id):
             if (media_type != "video"):
                 return JsonResponse({
                     "success": False,
-                    "message": "Only video files are allowed for session recordings"
+                    "message": "File must be a video"
                 }, status=400)
-                
-            # Upload to Cloudinary
-            upload_result = upload_to_cloudinary(
-                recording_file, 
-                username, 
-                folder="session_recordings"
-            )
             
-            if not upload_result:
+            # Create temp file for processing
+            with tempfile.NamedTemporaryFile(delete=False, suffix=extension) as temp_file:
+                for chunk in recording_file.chunks():
+                    temp_file.write(chunk)
+                temp_path = temp_file.name
+            
+            try:
+                # Format filename with session info for better organization
+                timestamp = request.POST.get('timestamp', str(int(time.time())))
+                duration = float(request.POST.get('duration', 0))
+                
+                # Create a recognizable filename pattern
+                filename = f"session_{session_id}_{timestamp}{extension}"
+                
+                # Upload to Cloudinary with proper folder structure
+                cloudinary_upload = upload_file_to_cloudinary(
+                    temp_path,
+                    folder=f"therapy_sessions/{session_id}/recordings",
+                    public_id=f"rec_{timestamp}",
+                    resource_type="video"
+                )
+                
+                if not cloudinary_upload or not cloudinary_upload.get('secure_url'):
+                    raise Exception("Failed to upload recording to Cloudinary")
+                
+                # Create a thumbnail from the video
+                thumbnail_url = cloudinary_upload.get('thumbnail_url') or cloudinary_upload.get('secure_url').replace('/video/', '/image/').replace(extension, '.jpg')
+                
+                # Run emotion analysis on the video
+                analysis_results = analyze_video(temp_path)
+                
+                # Create recording document
+                recording_data = {
+                    "session_id": session_id,
+                    "media_url": cloudinary_upload.get('secure_url'),
+                    "thumbnail_url": thumbnail_url,
+                    "public_id": cloudinary_upload.get('public_id'),
+                    "created_at": datetime.now(),
+                    "duration": duration,
+                    "filename": filename,
+                    "uploaded_by": user_id,
+                    "analysis_results": analysis_results
+                }
+                
+                # Save to database
+                recording_id = db.session_recordings.insert_one(recording_data).inserted_id
+                
+                # Update session with reference to this recording
+                db.therapy_sessions.update_one(
+                    {"_id": ObjectId(session_id)},
+                    {"$push": {"recordings": recording_id}}
+                )
+                
                 return JsonResponse({
-                    "success": False,
-                    "message": "Failed to upload recording"
-                }, status=500)
+                    "success": True,
+                    "message": "Recording uploaded and processed successfully",
+                    "recording_id": str(recording_id),
+                    "media_url": cloudinary_upload.get('secure_url'),
+                    "thumbnail_url": thumbnail_url,
+                    "duration": duration
+                })
                 
-            # Save to media storage collection
-            media_storage = MediaStorage(
-                user_id=user_id,
-                media_type="video",
-                media_url=upload_result["url"],
-                public_id=upload_result["public_id"],
-                media_category="session_recording",
-                filename=recording_file.name,
-                metadata={
-                    "width": upload_result.get("width"),
-                    "height": upload_result.get("height"),
-                    "format": upload_result.get("format"),
-                    "size": recording_file.size,
-                    "duration": upload_result.get("duration")
-                },
-                session_id=session_id
-            )
-            
-            media_id = media_storage.save()
-            
-            # Update session with recording URL
-            TherapySession.add_recording(session_id, upload_result["url"])
-            
-            return JsonResponse({
-                "success": True,
-                "media_id": str(media_id),
-                "recording_url": upload_result["url"],
-                "message": "Session recording uploaded successfully"
-            })
-            
+            finally:
+                # Clean up the temp file
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
         else:
             return JsonResponse({
                 "success": False,
@@ -858,9 +911,10 @@ def upload_session_recording(request, session_id):
             }, status=400)
             
     except Exception as e:
+        logger.error(f"Error in upload_session_recording: {str(e)}")
         return JsonResponse({
             "success": False,
-            "message": str(e)
+            "message": f"Failed to process recording: {str(e)}"
         }, status=500)
         
 @csrf_exempt
@@ -2351,6 +2405,117 @@ def get_session_notes(request, session_id):
         })
         
     except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "message": str(e)
+        }, status=500)
+
+# Replace the incomplete get_session_recordings function
+
+@require_http_methods(["GET"])
+def get_session_recordings(request, session_id):
+    """Get all recordings for a specific therapy session"""
+    try:
+        # Check authentication
+        current_user = get_user_from_request(request)
+        if not current_user:
+            return JsonResponse({
+                "success": False,
+                "message": "Authentication required"
+            }, status=401)
+        
+        user_id = str(current_user.get("_id"))
+        user_role = current_user.get("role")
+        
+        # Get session
+        session = TherapySession.find_by_id(session_id)
+        if not session:
+            return JsonResponse({
+                "success": False,
+                "message": "Session not found"
+            }, status=404)
+        
+        # # Check authorization
+        # if (user_id != str(session.get("user_id")) and 
+        #     user_id != str(session.get("therapist_id")) and 
+        #     user_role != "admin"):
+        #     return JsonResponse({
+        #         "success": False,
+        #         "message": "You're not authorized to access this session's recordings"
+        #     }, status=403)
+        
+        # Get recordings from the database
+        recordings = list(db.session_recordings.find({"session_id": session_id}))
+        
+        # Convert ObjectIds to strings
+        recordings = [convert_object_ids(rec) for rec in recordings]
+        
+        return JsonResponse({
+            "success": True,
+            "recordings": recordings
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting session recordings: {str(e)}")
+        return JsonResponse({
+            "success": False,
+            "message": str(e)
+        }, status=500)
+        
+# Add this new view function
+
+@require_http_methods(["GET"])
+def get_recording_details(request, recording_id):
+    """Get details for a specific recording"""
+    try:
+        # Check authentication
+        current_user = get_user_from_request(request)
+        if not current_user:
+            return JsonResponse({
+                "success": False,
+                "message": "Authentication required"
+            }, status=401)
+        
+        user_id = str(current_user.get("_id"))
+        user_role = current_user.get("role")
+        
+        # Find the recording
+        recording = db.session_recordings.find_one({"_id": ObjectId(recording_id)})
+        
+        if not recording:
+            return JsonResponse({
+                "success": False,
+                "message": "Recording not found"
+            }, status=404)
+        
+        # Get the associated session
+        session = TherapySession.find_by_id(recording.get("session_id"))
+        
+        if not session:
+            return JsonResponse({
+                "success": False,
+                "message": "Associated session not found"
+            }, status=404)
+        
+        # # Check authorization - only the client, therapist, or admin can access
+        # if (user_id != str(session.get("user_id")) and 
+        #     user_id != str(session.get("therapist_id")) and 
+        #     user_role != "admin"):
+        #     return JsonResponse({
+        #         "success": False,
+        #         "message": "You're not authorized to access this recording"
+        #     }, status=403)
+        
+        # Convert ObjectIds to strings for JSON serialization
+        recording = convert_object_ids(recording)
+        
+        return JsonResponse({
+            "success": True,
+            "recording": recording
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting recording details: {str(e)}")
         return JsonResponse({
             "success": False,
             "message": str(e)

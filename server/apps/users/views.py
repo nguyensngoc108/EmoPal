@@ -280,9 +280,10 @@ def delete_user(request):
             return JsonResponse({"error": str(e)}, status=500)
         
 @csrf_exempt
-def get_user_profile(request):
-    """Get the current user's profile"""
+def user_profile(request):
+    """Handle both GET and PUT requests for user profile"""
     if request.method == "GET":
+        # Get user from JWT token
         current_user = get_user_from_request(request)
         if not current_user:
             return JsonResponse({
@@ -298,11 +299,69 @@ def get_user_profile(request):
                 "email": current_user.get("email"),
                 "first_name": current_user.get("first_name"),
                 "last_name": current_user.get("last_name"),
+                "phone": current_user.get("phone"),
+                "bio": current_user.get("bio"),
                 "role": current_user.get("role", "client"),
                 "profile_picture": current_user.get("profile_picture")
             }
-    })
-        
+        })
+    
+    elif request.method == "PUT":
+        try:
+            # Get user from JWT token
+            current_user = get_user_from_request(request)
+            if not current_user:
+                return JsonResponse({
+                    "success": False,
+                    "message": "Authentication required"
+                }, status=401)
+                
+            data = json.loads(request.body)
+            user_id = str(current_user.get("_id"))
+            
+            # Extract fields that can be updated
+            updatable_fields = [
+                "first_name", "last_name", "phone", "bio", 
+                "gender", "address", "preferences", "notification_settings"
+            ]
+            
+            update_data = {
+                key: value for key, value in data.items() 
+                if key in updatable_fields and value is not None
+            }
+            
+            if not update_data:
+                return JsonResponse({
+                    "success": False,
+                    "message": "No valid fields to update"
+                }, status=400)
+            
+            # Update the profile
+            success = User.update_profile(user_id, update_data)
+            
+            if success:
+                return JsonResponse({
+                    "success": True,
+                    "message": "Profile updated successfully"
+                })
+            else:
+                return JsonResponse({
+                    "success": False,
+                    "message": "Failed to update profile"
+                }, status=500)
+                
+        except Exception as e:
+            return JsonResponse({
+                "success": False,
+                "message": f"Update failed: {str(e)}"
+            }, status=500)
+    
+    # Method not allowed
+    return JsonResponse({
+        "success": False,
+        "message": f"Method {request.method} not allowed"
+    }, status=405)
+
 @csrf_exempt
 def update_password(request):
     """ Update user password """

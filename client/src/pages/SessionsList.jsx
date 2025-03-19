@@ -246,7 +246,7 @@ const SessionsList = () => {
       navigate(`/messages/${session.conversation_id}`);
     } else {
       // If no conversation exists, don't navigate (could add a notification here)
-      console.log("No active conversation found for this session.");
+
     }
   };
 
@@ -759,7 +759,7 @@ const SessionsList = () => {
 const SessionStatsOverview = ({ stats, isTherapist }) => {
   // Add defensive check - use empty object if stats is undefined
   const safeStats = stats || {};
-  console.log("Stats passed to SessionStatsOverview:", safeStats);
+
   
   // Get the session counts with fallbacks
   const completedCount = safeStats.completedCount || 0;

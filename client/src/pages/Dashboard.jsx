@@ -63,7 +63,7 @@ const Dashboard = () => {
   const [greeting, setGreeting] = useState('');
   const [stats, setStats] = useState({
     todaySessions: 0,
-    weekSessions: 0,
+    weekSessions: 0,  
     monthSessions: 0,
     totalClients: 0
   });
@@ -168,9 +168,9 @@ const Dashboard = () => {
   // This is your existing therapist dashboard
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      {/* Dashboard Header */}
-      <div className="bg-gradient-to-r from-indigo-700 to-indigo-500 text-white py-8 px-4 sm:px-6 lg:px-8 shadow-lg relative overflow-hidden">
+    <div className="bg-gray-50 min-h-screen flex flex-col">
+      {/* Dashboard Header - Full width background with centered content */}
+      <div className="bg-gradient-to-r from-indigo-700 to-indigo-500 text-white py-8 shadow-lg relative overflow-hidden">
         {/* Background pattern */}
         <div className="absolute inset-0 opacity-10">
           <svg className="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -184,15 +184,17 @@ const Dashboard = () => {
           </defs>
         </div>
         
-        <div className="container mx-auto relative z-10">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div className="mb-6 md:mb-0">
-              <h1 className="text-3xl font-bold">{greeting}, {currentUser?.user.username || 'Therapist'}</h1>
-              <p className="text-indigo-100 mt-1">
+            <div className="mb-6 md:mb-0 animate-fadeIn">
+              <h1 className="text-3xl font-bold text-shadow">
+                {greeting}, {currentUser?.user.username || 'Therapist'}
+              </h1>
+              <p className="text-indigo-100 mt-1 opacity-90">
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 animate-slideInRight">
               {isTherapist && (
                 <Link 
                   to="/client-management"
@@ -205,13 +207,13 @@ const Dashboard = () => {
               {Array.isArray(upcomingSessions) && upcomingSessions.length > 0 && upcomingSessions[0] && upcomingSessions[0]._id ? (
                 <Link 
                   to={`/sessions/${upcomingSessions[0]._id}`}
-                  className="btn-dashboard-header"
+                  className="btn-dashboard-header glow-on-hover"
                 >
                   <Icon icon={VideoCameraIcon} size="sm" className="mr-2" />
                   Join Next Session
                 </Link>
               ) : (
-                <div className="btn-dashboard-header opacity-50 cursor-not-allowed">
+                <div className="btn-dashboard-header opacity-70 cursor-not-allowed">
                   <Icon icon={VideoCameraIcon} size="sm" className="mr-2" />
                   No Upcoming Sessions
                 </div>
@@ -221,7 +223,8 @@ const Dashboard = () => {
         </div>
       </div>
       
-      <div className="container mx-auto py-8 px-4">
+      {/* Main Content - Fixed width with proper centering */}
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Dashboard Tabs - Simplified for therapist */}
         <div className="dashboard-tabs">
           <div className="border-b border-gray-200">

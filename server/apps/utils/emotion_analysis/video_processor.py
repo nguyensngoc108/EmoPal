@@ -1,3 +1,4 @@
+import json
 import cv2
 import numpy as np
 import logging
@@ -18,11 +19,73 @@ def get_optimal_sampling_rate(video_duration):
     else:  # Longer videos
         return 0.1  # Sample 10% of frames
 
+# Modify the extract_frames function to better handle browser-generated WebM files
 def extract_frames(video_path, sample_rate=1.0):
-    """
-    Extract frames from video with improved frame capture
-    """
-    # Open video file
+    """Extract frames from video with improved compatibility for browser WebM files"""
+    # CRITICAL FIX: Try to use FFmpeg first for better WebM compatibility
+    try:
+        import subprocess
+        import tempfile
+        import os
+        
+        # Check if the file is WebM and possibly problematic
+        is_webm = video_path.lower().endswith('.webm')
+        
+        if is_webm:
+            # Create a temporary directory for extracted frames
+            with tempfile.TemporaryDirectory() as temp_dir:
+                # Use FFmpeg to extract frames (much better WebM support than OpenCV)
+                ffmpeg_cmd = [
+                    'ffmpeg', '-i', video_path, 
+                    '-vf', f'fps=1/{int(1/sample_rate)}', # Extract at sample rate
+                    f'{temp_dir}/frame_%04d.jpg'
+                ]
+                
+                logger.info(f"Attempting FFmpeg extraction: {' '.join(ffmpeg_cmd)}")
+                subprocess.run(ffmpeg_cmd, check=True, capture_output=True)
+                
+                # Check if frames were extracted
+                frame_files = sorted([f for f in os.listdir(temp_dir) if f.startswith('frame_')])
+                
+                if frame_files:
+                    # Get video info using FFprobe
+                    ffprobe_cmd = [
+                        'ffprobe', '-v', 'error', '-select_streams', 'v:0',
+                        '-show_entries', 'stream=width,height,r_frame_rate,nb_frames',
+                        '-of', 'json', video_path
+                    ]
+                    
+                    result = subprocess.run(ffprobe_cmd, capture_output=True, text=True)
+                    video_info = json.loads(result.stdout)['streams'][0]
+                    
+                    # Calculate FPS from rational number format
+                    fps_parts = video_info['r_frame_rate'].split('/')
+                    fps = float(fps_parts[0]) / float(fps_parts[1]) if len(fps_parts) > 1 else float(fps_parts[0])
+                    
+                    # Build video info dict
+                    processed_info = {
+                        "duration": float(video_info.get('nb_frames', 0)) / fps if fps > 0 else 0,
+                        "fps": fps,
+                        "frame_count": int(video_info.get('nb_frames', 0)),
+                        "resolution": f"{video_info.get('width', 0)}x{video_info.get('height', 0)}"
+                    }
+                    
+                    # Load frames using OpenCV
+                    frames = []
+                    for i, frame_file in enumerate(frame_files):
+                        frame_path = os.path.join(temp_dir, frame_file)
+                        frame = cv2.imread(frame_path)
+                        if frame is not None:
+                            # Estimate timestamp based on position and frame rate
+                            timestamp = i / sample_rate
+                            frames.append((i, timestamp, frame))
+                    
+                    logger.info(f"Successfully extracted {len(frames)} frames using FFmpeg")
+                    return processed_info, frames
+    except Exception as e:
+        logger.warning(f"FFmpeg extraction failed, falling back to OpenCV: {str(e)}")
+    
+    # Original OpenCV method as fallback
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         logger.error(f"Failed to open video file: {video_path}")
@@ -35,13 +98,43 @@ def extract_frames(video_path, sample_rate=1.0):
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
-    # Video properties dict
-    video_info = {
-        "duration": duration,
-        "fps": fps,
-        "frame_count": frame_count,
-        "resolution": f"{width}x{height}"
-    }
+    # Log detailed information about the video
+    logger.info(f"Video info from OpenCV: fps={fps}, frames={frame_count}, duration={duration}, size={width}x{height}")
+    
+    # If video appears empty but file exists, try to force reading with relaxed constraints
+    if frame_count == 0 and os.path.getsize(video_path) > 0:
+        logger.warning("Video appears empty but file exists, forcing frame reading")
+        
+        # Try direct frame reading
+        frames = []
+        frame_idx = 0
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            
+            timestamp = frame_idx / fps if fps > 0 else 0
+            frames.append((frame_idx, timestamp, frame))
+            frame_idx += 1
+            
+            # Apply sampling rate by skipping frames
+            for _ in range(int(1/sample_rate) - 1):
+                cap.read()  # Skip frames according to sampling rate
+                frame_idx += 1
+        
+        # Update frame count based on what we actually read
+        frame_count = len(frames)
+        
+        # Create video info dict
+        video_info = {
+            "duration": frame_count / fps if fps > 0 else 0,
+            "fps": fps,
+            "frame_count": frame_count,
+            "resolution": f"{width}x{height}"
+        }
+        
+        cap.release()
+        return video_info, frames
     
     # For longer videos, improve sampling based on content analysis
     if duration > 60:  # Videos longer than 1 minute

@@ -1,8 +1,18 @@
 import api from './api';
 
 const TherapistService = {
+  // Enhance the getTherapists method to handle more filter parameters
   getTherapists: (params = {}) => {
-    return api.get('/therapists/', { params });
+    // Convert arrays to comma-separated strings if needed
+    const formattedParams = { ...params };
+    if (Array.isArray(params.languages)) {
+      formattedParams.languages = params.languages.join(',');
+    }
+    if (Array.isArray(params.specializations)) {
+      formattedParams.specializations = params.specializations.join(',');
+    }
+    
+    return api.get('/therapists/', { params: formattedParams });
   },
   
   getTherapistById: (therapistId) => {
@@ -43,7 +53,17 @@ const TherapistService = {
   
   getSpecializations: () => {
     return api.get('/therapists/specializations/');
-  }
+  },
+  
+  // Add advanced search method
+  searchTherapistsByKeyword: (keyword, params = {}) => {
+    return api.get('/therapists/search/', { 
+      params: { 
+        query: keyword,
+        ...params 
+      } 
+    });
+  },
 };
 
 export default TherapistService;

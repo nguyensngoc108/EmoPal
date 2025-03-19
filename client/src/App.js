@@ -25,7 +25,7 @@ import PaymentDetails from "./pages/PaymentDetails.jsx";
 import PaymentHistory from "./pages/PaymentHistory.jsx";
 import SessionsList from "./pages/SessionsList.jsx";
 import SessionDetail from "./pages/SessionDetail.jsx";
-
+import RecordingViewer from "./pages/RecordingViewer.jsx";
 // Commented imports will be uncommented as you implement these components
 // import TherapistList from './pages/TherapistList';
 // import TherapistProfile from './pages/TherapistProfile';
@@ -224,6 +224,15 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <SessionDetail />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/recordings/:recordingId"
+              element={
+                <ProtectedRoute>
+                  <RecordingViewer />
                 </ProtectedRoute>
               }
             />

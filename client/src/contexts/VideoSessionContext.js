@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useRef, useCallback, useEffect } from 'react';
 import WebSocketManager from '../services/WebSocketManager';
+import { useAuth } from '../contexts/AuthContext';
+import SessionService from '../services/SessionServices';
+import { toast as notifications } from 'react-toastify';
 
 // Global connection tracking
 let globalConnectionState = {
@@ -7,6 +10,8 @@ let globalConnectionState = {
   lastAttemptTime: 0,
   currentSessionId: null
 };
+
+
 
 const VideoSessionContext = createContext(null);
 
@@ -42,6 +47,23 @@ export const VideoSessionProvider = ({ children }) => {
     },
     isAnalyzing: false
   });
+
+  // Add these new state variables after the existing state declarations
+
+  const [recordingState, setRecordingState] = useState({
+    isRecording: false,
+    preparingToRecord: false, // Add this new flag
+    recordingStartTime: null,
+    recordingBlob: null,
+    recordingChunks: [],
+    recordingDuration: 0,
+    isProcessing: false,
+    processingStatus: '',
+    recordingId: null
+  });
+
+  // Add a ref for the MediaRecorder
+  const mediaRecorderRef = useRef(null);
   
   // Media state
   const [mediaState, setMediaState] = useState({
@@ -159,10 +181,7 @@ export const VideoSessionProvider = ({ children }) => {
       
       // CRITICAL FIX: Use the server-provided UID instead of generating a new one
       // This ensures the UID matches what the token was generated for
-      console.log(`Using server-provided UID: ${uid}`);
-      
-      // Join the channel with the exact server-provided UID
-      console.log(`Using exactly the server-provided UID: ${uid}`);
+
 
       // Join with EXACTLY the UID that the token was generated for
       try {
@@ -170,7 +189,7 @@ export const VideoSessionProvider = ({ children }) => {
         if (agoraClientRef.current) {
           try {
             // Already connected, so leave first
-            console.log("Cleaning up existing client before reconnecting");
+
             await agoraClientRef.current.leave();
           } catch (err) {
             console.warn("Error during cleanup:", err);
@@ -286,6 +305,11 @@ export const VideoSessionProvider = ({ children }) => {
             return;
           }
           
+          // IMPORTANT FIX: Add short delay before subscribing to ensure stream is fully published
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+      
+          
           // Subscribe to remote user with retry logic
           let subscribed = false;
           let attempts = 0;
@@ -298,8 +322,15 @@ export const VideoSessionProvider = ({ children }) => {
             } catch (subscribeError) {
               attempts++;
               console.warn(`Subscribe attempt ${attempts} failed:`, subscribeError);
-              // Wait a bit before retrying
-              await new Promise(r => setTimeout(r, 500));
+              
+              // Check if the error is "no such stream" and break early if it is
+              if (subscribeError.message && subscribeError.message.includes("no such stream id")) {
+                console.log(`Stream no longer available, stopping retry attempts`);
+                break;
+              }
+              
+              // Wait longer between retries with exponential backoff
+              await new Promise(r => setTimeout(r, 500 * attempts));
             }
           }
           
@@ -339,6 +370,26 @@ export const VideoSessionProvider = ({ children }) => {
                 } 
               }));
             }, 200);
+
+            // CRITICAL: Make video visible to both users
+            setTimeout(() => {
+              // Force video elements to become visible
+              const remoteVideos = document.querySelectorAll('.remote-video video');
+              const localVideos = document.querySelectorAll('.local-video video');
+              
+              // Set explicit styles to ensure visibility
+              [...remoteVideos, ...localVideos].forEach(video => {
+                if (video) {
+                  video.style.display = 'block';
+                  video.style.visibility = 'visible';
+                  video.style.opacity = '1';
+                }
+              });
+              
+              console.log("Force-enabled video visibility for all streams");
+            }, 500);
+
+            enforceVideoVisibility();
           }
           
           // CRITICAL FIX: Add proper audio handling
@@ -362,6 +413,15 @@ export const VideoSessionProvider = ({ children }) => {
             // CRITICAL: Actually play the audio track
             user.audioTrack.play();
             console.log("Remote audio is now playing");
+          }
+
+          // After successfully subscribing to remote video:
+          if (mediaType === "video" && sessionState.role === 'therapist') {
+            // Attempt to start recording when remote video is available
+            console.log("Remote video detected - checking recording status");
+            if (!recordingState.isRecording && !recordingState.preparingToRecord) {
+              checkAndStartRecording();
+            }
           }
           
         } catch (error) {
@@ -559,6 +619,154 @@ export const VideoSessionProvider = ({ children }) => {
     }
   }, []);
 
+  // Add this RIGHT BEFORE the checkMediaPermissions function (around line 530)
+
+  const disconnectFromSession = useCallback(() => {
+    console.log("Executing comprehensive disconnection...");
+    
+    // Add at the beginning of disconnectFromSession
+    if (window._recordingJustStarted) {
+      console.log("Preventing disconnection immediately after recording start");
+      return; // Don't disconnect if recording just started
+    }
+    
+    // FIRST: Stop recording if active (from second implementation)
+    if (recordingState.isRecording && mediaRecorderRef.current) {
+      try {
+        console.log("Stopping active recording before disconnection");
+        mediaRecorderRef.current.stop();
+        // Don't set to null here as we need it to process the recording data
+      } catch (err) {
+        console.error("Error stopping recording during disconnect:", err);
+      }
+    }
+    
+    // 1. Stop emotion analysis if it's running
+    if (frameCapture.current) {
+      clearInterval(frameCapture.current);
+      frameCapture.current = null;
+      console.log("✓ Emotion analysis stopped");
+    }
+    
+    // 2. Clean up local tracks with proper error handling
+    if (localStreamRef.current) {
+      try {
+        // Close audio track if it exists
+        if (localStreamRef.current.audioTrack) {
+          localStreamRef.current.audioTrack.close();
+          console.log("✓ Local audio track closed");
+        }
+        
+        // Close video track if it exists
+        if (localStreamRef.current.videoTrack) {
+          localStreamRef.current.videoTrack.close();
+          console.log("✓ Local video track closed");
+        }
+        
+        // Clear the reference
+        localStreamRef.current = null;
+      } catch (err) {
+        console.error("Error closing local tracks:", err);
+      }
+    }
+    
+    // 3. Clean up remote tracks
+    if (remoteStreamRef.current) {
+      try {
+        // Handle remote audio
+        if (remoteStreamRef.current.audioTrack) {
+          remoteStreamRef.current.audioTrack.stop();
+          console.log("✓ Remote audio track stopped");
+        }
+        
+        // Handle remote video
+        if (remoteStreamRef.current.videoTrack) {
+          remoteStreamRef.current.videoTrack.stop();
+          console.log("✓ Remote video track stopped");
+        }
+        
+        // Clear the reference
+        remoteStreamRef.current = null;
+      } catch (err) {
+        console.error("Error stopping remote tracks:", err);
+      }
+    }
+    
+    // 4. Leave Agora channel with proper error handling
+    if (agoraClientRef.current) {
+      try {
+        agoraClientRef.current.leave().then(() => {
+          console.log("✓ Successfully left Agora channel");
+        }).catch(error => {
+          console.warn("Error leaving Agora channel:", error);
+        }).finally(() => {
+          agoraClientRef.current = null;
+        });
+      } catch (err) {
+        console.error("Error during Agora cleanup:", err);
+        agoraClientRef.current = null;
+      }
+    }
+    
+    // 5. Close WebSocket connection with logging
+    try {
+      wsManager.current.disconnect();
+      console.log("✓ WebSocket disconnected");
+    } catch (wsError) {
+      console.error("Error disconnecting WebSocket:", wsError);
+    }
+    
+    // 6. Clean up any browser memory by suggesting garbage collection
+    try {
+      if (window.gc) window.gc();
+    } catch (e) {
+      // gc might not be available
+    }
+    
+    // 7. Reset all state
+    setSessionState({
+      isConnected: false,
+      isJoined: false,
+      sessionId: null,
+      otherParticipant: null,
+      role: null,
+      loading: false,
+      error: null
+    });
+    
+    setEmotionData({
+      currentEmotions: {},
+      dominantEmotion: null,
+      valence: 0,
+      engagement: 0,
+      emotionHistory: [],
+      emotionTrends: null,
+      warnings: [],
+      insights: {
+        current_state: '',
+        suggestions: [],
+        observation: ''
+      },
+      isAnalyzing: false
+    });
+    
+    setMediaState({
+      isMuted: false,
+      isVideoOff: false,
+      isScreenSharing: false
+    });
+    
+    // 8. Remove from localStorage to allow new connections
+    localStorage.removeItem('videoSessionTabId');
+    localStorage.removeItem('videoSessionActive');
+    
+    console.log('✓ Fully disconnected from session');
+    
+    // 9. Dispatch global event that app can listen to
+    window.dispatchEvent(new CustomEvent('video-session-disconnected'));
+    
+  }, [recordingState.isRecording]); // Add recordingState.isRecording to dependencies
+
   // Update connectToSession to check permissions first
   const connectToSession = useCallback(async (sessionId, userId, role) => {
     try {
@@ -676,7 +884,7 @@ export const VideoSessionProvider = ({ children }) => {
       }));
       return false;
     }
-  }, [handleWebSocketMessage, checkMediaPermissions]);
+  }, [handleWebSocketMessage, checkMediaPermissions, disconnectFromSession]);
   
   // Media control functions
   const toggleAudio = useCallback(() => {
@@ -805,8 +1013,16 @@ export const VideoSessionProvider = ({ children }) => {
       console.error('Emotion analysis WebSocket error:', error);
     };
     
-    socket.onclose = () => {
-      console.log('Emotion analysis WebSocket closed');
+    socket.onclose = (event) => {
+      console.log('Emotion analysis WebSocket closed', event);
+      
+      // IMPORTANT: Auto-reconnect if closed unexpectedly during recording
+      if (recordingState.isRecording && event.code !== 1000) {
+        console.log('Reconnecting emotion analysis during active recording...');
+        setTimeout(() => startEmotionAnalysis(), 1000);
+        return;
+      }
+      
       setEmotionData(prev => ({
         ...prev,
         isAnalyzing: false
@@ -849,7 +1065,16 @@ export const VideoSessionProvider = ({ children }) => {
       }
     }, 1000); // Process 1 frame per second
     
-  }, [sessionState.sessionId, sessionState.isJoined, sessionState.role, updateEmotionData, updateEmotionTrends, updateTherapeuticInsights, addEmotionWarning]);
+  }, [
+    sessionState.sessionId, 
+    sessionState.isJoined, 
+    sessionState.role, 
+    updateEmotionData, 
+    updateEmotionTrends, 
+    updateTherapeuticInsights, 
+    addEmotionWarning,
+    recordingState.isRecording
+  ]);
   
   // Stop emotion analysis
   const stopEmotionAnalysis = useCallback(() => {
@@ -876,140 +1101,34 @@ export const VideoSessionProvider = ({ children }) => {
   
   // Update the disconnectFromSession function with proper cleanup
 
-  const disconnectFromSession = useCallback(() => {
-    console.log("Executing comprehensive disconnection...");
-    
-    // 1. Stop emotion analysis if it's running
-    if (frameCapture.current) {
-      clearInterval(frameCapture.current);
-      frameCapture.current = null;
-      console.log("✓ Emotion analysis stopped");
-    }
-    
-    // 2. Clean up local tracks with proper error handling
-    if (localStreamRef.current) {
-      try {
-        // Close audio track if it exists
-        if (localStreamRef.current.audioTrack) {
-          localStreamRef.current.audioTrack.close();
-          console.log("✓ Local audio track closed");
-        }
-        
-        // Close video track if it exists
-        if (localStreamRef.current.videoTrack) {
-          localStreamRef.current.videoTrack.close();
-          console.log("✓ Local video track closed");
-        }
-        
-        // Clear the reference
-        localStreamRef.current = null;
-      } catch (err) {
-        console.error("Error closing local tracks:", err);
-      }
-    }
-    
-    // 3. Clean up remote tracks
-    if (remoteStreamRef.current) {
-      try {
-        // Handle remote audio
-        if (remoteStreamRef.current.audioTrack) {
-          remoteStreamRef.current.audioTrack.stop();
-          console.log("✓ Remote audio track stopped");
-        }
-        
-        // Handle remote video
-        if (remoteStreamRef.current.videoTrack) {
-          remoteStreamRef.current.videoTrack.stop();
-          console.log("✓ Remote video track stopped");
-        }
-        
-        // Clear the reference
-        remoteStreamRef.current = null;
-      } catch (err) {
-        console.error("Error stopping remote tracks:", err);
-      }
-    }
-    
-    // 4. Leave Agora channel with proper error handling
-    if (agoraClientRef.current) {
-      try {
-        agoraClientRef.current.leave().then(() => {
-          console.log("✓ Successfully left Agora channel");
-        }).catch(error => {
-          console.warn("Error leaving Agora channel:", error);
-        }).finally(() => {
-          agoraClientRef.current = null;
-        });
-      } catch (err) {
-        console.error("Error during Agora cleanup:", err);
-        agoraClientRef.current = null;
-      }
-    }
-    
-    // 5. Close WebSocket connection with logging
-    try {
-      wsManager.current.disconnect();
-      console.log("✓ WebSocket disconnected");
-    } catch (wsError) {
-      console.error("Error disconnecting WebSocket:", wsError);
-    }
-    
-    // 6. Clean up any browser memory by suggesting garbage collection
-    try {
-      if (window.gc) window.gc();
-    } catch (e) {
-      // gc might not be available
-    }
-    
-    // 7. Reset all state
-    setSessionState({
-      isConnected: false,
-      isJoined: false,
-      sessionId: null,
-      otherParticipant: null,
-      role: null,
-      loading: false,
-      error: null
-    });
-    
-    setEmotionData({
-      currentEmotions: {},
-      dominantEmotion: null,
-      valence: 0,
-      engagement: 0,
-      emotionHistory: [],
-      emotionTrends: null,
-      warnings: [],
-      insights: {
-        current_state: '',
-        suggestions: [],
-        observation: ''
-      },
-      isAnalyzing: false
-    });
-    
-    setMediaState({
-      isMuted: false,
-      isVideoOff: false,
-      isScreenSharing: false
-    });
-    
-    // 8. Remove from localStorage to allow new connections
-    localStorage.removeItem('videoSessionTabId');
-    localStorage.removeItem('videoSessionActive');
-    
-    console.log('✓ Fully disconnected from session');
-    
-    // 9. Dispatch global event that app can listen to
-    window.dispatchEvent(new CustomEvent('video-session-disconnected'));
-    
-  }, []);
-  
   // Send chat message
   const sendChatMessage = useCallback((message) => {
     wsManager.current.sendChatMessage(message);
   }, []);
   
+  // Add this at the TOP of the VideoSessionContent component, before any other useEffect
+  useEffect(() => {
+    // Global flag to prevent component unmounting
+    window._videoSessionActive = true;
+    
+    // Create a custom event handler to forcibly prevent navigation
+    const preventNavigation = (e) => {
+      if (recordingState.isRecording || window._recordingJustStarted) {
+
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    // This prevents React Router navigation attempts
+    window.addEventListener('popstate', preventNavigation, true);
+    
+    return () => {
+      window._videoSessionActive = false;
+      window.removeEventListener('popstate', preventNavigation, true);
+    };
+  }, []);
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -1043,9 +1162,9 @@ export const VideoSessionProvider = ({ children }) => {
           // Stop and replay remote audio
           remoteStreamRef.current.audioTrack.stop();
           remoteStreamRef.current.audioTrack.play();
-          console.log("Replayed remote audio track");
+
         } catch (audioErr) {
-          console.warn("Could not replay remote audio:", audioErr);
+
         }
       }
       
@@ -1090,10 +1209,10 @@ export const VideoSessionProvider = ({ children }) => {
       };
       
       // Publish new tracks to channel
-      console.log("Publishing new tracks to channel...");
+
       await agoraClientRef.current.publish([microphoneTrack, cameraTrack]);
       
-      console.log("Video force reconnected successfully");
+
       
       // Dispatch an event to notify UI
       window.dispatchEvent(new CustomEvent('local-video-ready', { 
@@ -1238,6 +1357,388 @@ export const VideoSessionProvider = ({ children }) => {
     return colors[emotion] || '#9E9E9E';
   };
 
+  // Add this function to detect when both users have joined
+
+
+  const { currentUser } = useAuth();
+
+  const processAndUploadRecording = useCallback(async (blob) => {
+    if (!blob || !sessionState.sessionId) {
+      console.error("Missing recording blob or session ID");
+      setRecordingState(prev => ({ ...prev, isProcessing: false }));
+      return;
+    }
+    
+    // FIX 1: Validate that blob is actually a Blob object
+    if (!(blob instanceof Blob)) {
+      console.error("Invalid blob object:", blob);
+      setRecordingState(prev => ({ ...prev, isProcessing: false, processingStatus: 'failed' }));
+      notifications.error("Recording failed: Invalid media format");
+      return;
+    }
+    
+
+    
+    try {
+      setRecordingState(prev => ({
+        ...prev,
+        isProcessing: true,
+        processingStatus: 'uploading'
+      }));
+      
+      // Create formatted filename for better organization
+      const timestamp = Date.now();
+      const sessionDate = new Date().toISOString().split('T')[0];
+      const filename = `session_${sessionState.sessionId}_${sessionDate}_${timestamp}.webm`;
+      
+      // FIX 3: Create FormData with explicit type checking
+      const formData = new FormData();
+      try {
+        // Ensure we're appending a valid blob with correct filename
+        formData.append('recording_file', new Blob([blob], { type: blob.type }), filename);
+        formData.append('session_id', sessionState.sessionId);
+        formData.append('duration', (recordingState.recordingDuration || 0).toString());
+        formData.append('timestamp', timestamp.toString());
+        
+        // FIX 4: Check if user ID exists before appending
+        if (currentUser?.user?.id) {
+          formData.append('therapist_id', currentUser.user.id);
+        } else {
+          console.warn("No therapist ID available for recording");
+        }
+        
+        // Add recording context
+        formData.append('recording_context', JSON.stringify({
+          session_type: 'video',
+          participant_role: 'client',
+          session_id: sessionState.sessionId,
+          recording_type: 'auto_session'
+        }));
+      } catch (formDataError) {
+        console.error("FormData creation error:", formDataError);
+        throw formDataError;
+      }
+      
+      console.log(`Uploading session recording (${Math.round(blob.size/1024/1024)}MB)...`);
+      
+      // FIX 5: Add timeout for large uploads
+      const response = await SessionService.uploadSessionRecording(
+        sessionState.sessionId, 
+        formData
+      );
+      
+      if (response.data.success) {
+        setRecordingState(prev => ({
+          ...prev,
+          isProcessing: false,
+          processingStatus: 'completed',
+          recordingId: response.data.recording_id
+        }));
+        
+        console.log("Recording uploaded and processed successfully:", response.data);
+        
+        // Show notification to therapist
+        notifications.success("Session recording saved successfully");
+      } else {
+        throw new Error(response.data.message || "Upload failed");
+      }
+    } catch (error) {
+      console.error("Failed to process and upload recording:", error);
+      setRecordingState(prev => ({
+        ...prev,
+        isProcessing: false,
+        processingStatus: 'failed'
+      }));
+      
+      notifications.error("Failed to save session recording");
+    }
+  }, [sessionState.sessionId, recordingState.recordingDuration, currentUser?.user?.id]);
+
+  const startRecording = useCallback(async () => {
+    console.log("START RECORDING FUNCTION CALLED", {
+      hasRemoteVideo: !!remoteStreamRef.current?.videoTrack,
+      isAlreadyRecording: recordingState.isRecording
+    });
+    
+    if (!remoteStreamRef.current?.videoTrack || recordingState.isRecording) {
+      console.warn("Cannot start recording: No remote video or already recording");
+      return;
+    }
+    
+    // Helper function to find supported MIME type
+    const getSupportedMimeType = () => {
+      const types = [
+        'video/webm;codecs=vp9,opus',
+        'video/webm;codecs=vp8,opus',
+        'video/webm',
+        'video/mp4'
+      ];
+      
+      for (const type of types) {
+        if (MediaRecorder.isTypeSupported(type)) {
+          return type;
+        }
+      }
+      
+      return 'video/webm'; // Default fallback
+    };
+    
+    try {
+      console.log("Initializing recording of remote video...");
+      
+      // FIXED: Create a new MediaStream and add the tracks correctly
+      const remoteStream = new MediaStream();
+      
+      // Get the actual MediaStreamTrack from Agora's track object
+      const videoTrack = remoteStreamRef.current.videoTrack.getMediaStreamTrack();
+      remoteStream.addTrack(videoTrack);
+      
+      // Add remote audio if available
+      if (remoteStreamRef.current.audioTrack) {
+        const audioTrack = remoteStreamRef.current.audioTrack.getMediaStreamTrack();
+        remoteStream.addTrack(audioTrack);
+      }
+      
+      // Rest of the function remains the same...
+      const mimeType = getSupportedMimeType();
+      const mediaRecorder = new MediaRecorder(remoteStream, {
+        mimeType: mimeType,
+        videoBitsPerSecond: 2500000 // 2.5 Mbps
+      });
+
+      // Add error handling for the MediaRecorder
+      mediaRecorder.onerror = (event) => {
+        console.error("MediaRecorder error:", event.error);
+        notifications.error("Recording failed: " + event.error.message);
+      };
+      
+      // Store chunks of recorded data
+      const chunks = [];
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          chunks.push(e.data);
+          console.log(`Added chunk: ${e.data.size} bytes, total chunks: ${chunks.length}`);
+          
+          // Force continue recording for at least 30 seconds
+          if (chunks.length === 1) {
+            window._forceRecordingContinue = true;
+            setTimeout(() => {
+              window._forceRecordingContinue = false;
+            }, 30000); // 30 seconds minimum recording
+          }
+          
+          // Update duration while recording
+          const currentDuration = (Date.now() - recordingState.recordingStartTime) / 1000;
+          setRecordingState(prev => ({
+            ...prev,
+            recordingDuration: currentDuration
+          }));
+        }
+      };
+      
+      // When recording stops, ensure proper blob creation:
+      mediaRecorder.onstop = async () => {
+        console.log("Recording stopped, processing...");
+        
+        if (chunks.length === 0) {
+          console.error("No data chunks collected during recording");
+          setRecordingState(prev => ({
+            ...prev,
+            isRecording: false,
+            isProcessing: false,
+            processingStatus: 'failed'
+          }));
+          notifications.error("Recording failed: No data captured");
+          return;
+        }
+        
+        // Create a single Blob from all chunks with reliable type
+        const mimeType = getSupportedMimeType();
+        const baseType = mimeType.split(';')[0] || 'video/webm';
+        
+        try {
+          const recordingBlob = new Blob(chunks, { type: baseType });
+          console.log(`Created recording blob: ${recordingBlob.size} bytes, type: ${recordingBlob.type}`);
+          
+          // Ensure the blob is valid before proceeding
+          if (recordingBlob.size === 0) {
+            throw new Error("Created blob has zero size");
+          }
+          
+          // Update recording state
+          setRecordingState(prev => ({
+            ...prev,
+            isRecording: false,
+            recordingBlob,
+            isProcessing: true,
+            processingStatus: 'preparing'
+          }));
+          
+          // Process and upload the recording
+          await processAndUploadRecording(recordingBlob);
+        } catch (blobError) {
+          console.error("Failed to create recording blob:", blobError);
+          setRecordingState(prev => ({
+            ...prev,
+            isRecording: false,
+            isProcessing: false,
+            processingStatus: 'failed'
+          }));
+          notifications.error("Recording failed: Could not process media");
+        }
+      };
+      
+      // Start recording with 1-second chunks for regular updates
+      mediaRecorder.start(500); // 500ms chunks instead of 1000ms
+      mediaRecorderRef.current = mediaRecorder;
+      
+      // Update recording state
+      setRecordingState(prev => ({
+        ...prev,
+        isRecording: true,
+        recordingStartTime: Date.now(),
+        recordingBlob: null,
+        recordingChunks: [],
+        recordingDuration: 0,
+        isProcessing: false,
+        processingStatus: '',
+        recordingId: null
+      }));
+      
+
+    } catch (error) {
+      console.error("Failed to start recording:", error);
+      setRecordingState(prev => ({ ...prev, isRecording: false }));
+    }
+  }, [remoteStreamRef, recordingState.isRecording, processAndUploadRecording]);
+
+  // CRITICAL FIX 1: Add this function before startRecording
+  const checkAndStartRecording = useCallback(() => {
+
+    
+    setRecordingState(prev => ({
+      ...prev,
+      preparingToRecord: true
+    }));
+    
+    return setTimeout(() => {
+      if (sessionState.isJoined && remoteStreamRef.current?.videoTrack) {
+        startRecording();
+      } else {
+        console.log("Recording canceled: session no longer active");
+        setRecordingState(prev => ({
+          ...prev,
+          preparingToRecord: false
+        }));
+      }
+    }, 500); // Reduced from 3000ms to 500ms
+  }, [sessionState.isJoined, remoteStreamRef.current?.videoTrack, startRecording]);
+
+  // CRITICAL FIX 2: Replace your problematic useEffect with this one
+  useEffect(() => {
+    let hasStartedRecordingCheck = false;
+    let recordingCheckInterval = null;
+
+    // Use an interval instead of a dependency on the ref
+    if (sessionState.isJoined && sessionState.role === 'therapist') {
+      recordingCheckInterval = setInterval(() => {
+        // Check if we have remote video and should start recording
+        if (remoteStreamRef.current?.videoTrack && 
+            !recordingState.isRecording && 
+            !recordingState.preparingToRecord &&
+            !hasStartedRecordingCheck) {
+          
+  
+          hasStartedRecordingCheck = true; // Prevent multiple starts
+          
+          // Set a flag to prevent immediate session end
+          window._recordingJustStarted = true;
+          
+          // Start recording with a slight delay to ensure stability
+          setTimeout(() => {
+            startRecording();
+            
+            // Reset the flag after recording has started
+            setTimeout(() => {
+              window._recordingJustStarted = false;
+            }, 3000);
+          }, 1000);
+        }
+      }, 2000); // Check every 2 seconds
+    }
+    
+    return () => {
+      if (recordingCheckInterval) {
+        clearInterval(recordingCheckInterval);
+      }
+    };
+  }, [sessionState.isJoined, sessionState.role, recordingState.isRecording, recordingState.preparingToRecord, startRecording]);
+
+  // Replace your current stopRecording function
+  const stopRecording = useCallback(() => {
+    if (!mediaRecorderRef.current || !recordingState.isRecording) {
+      return;
+    }
+    
+    // Don't stop if we just started recording
+    if (window._forceRecordingContinue) {
+
+      setTimeout(() => stopRecording(), 5000);
+      return;
+    }
+    
+
+    
+    try {
+      mediaRecorderRef.current.stop();
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      setRecordingState(prev => ({ ...prev, isRecording: false }));
+    }
+  }, [recordingState.isRecording]);
+
+  // Add this at the beginning of your VideoSessionProvider component
+  useEffect(() => {
+    // Expose the context methods globally for debugging
+    window._debugVideoSession = {
+      startRecording: () => {
+        console.log("Manual recording triggered");
+        startRecording();
+      },
+      stopRecording: stopRecording,
+      getState: () => ({ sessionState, recordingState })
+    };
+    
+    return () => {
+      window._debugVideoSession = null;
+    };
+  }, [startRecording, stopRecording, sessionState, recordingState]);
+
+  // Add this function to VideoSessionContext.js:
+
+const enforceVideoVisibility = useCallback(() => {
+  // Force BOTH local and remote videos to be visible
+  setTimeout(() => {
+    const allVideos = document.querySelectorAll('video');
+    const remoteVideos = document.querySelectorAll('.remote-video video');
+    const localVideos = document.querySelectorAll('.local-video video');
+    
+    console.log(`Enforcing visibility for ${allVideos.length} videos (${remoteVideos.length} remote, ${localVideos.length} local)`);
+    
+    // Make ALL videos visible with !important
+    [...allVideos].forEach(video => {
+      if (video) {
+        video.style.cssText += `
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          z-index: 10 !important;
+        `;
+      }
+    });
+  }, 1000);
+}, []);
+
   const value = {
     sessionState,
     emotionData,
@@ -1254,7 +1755,10 @@ export const VideoSessionProvider = ({ children }) => {
     localStreamRef,
     remoteStreamRef,
     agoraClientRef,
-    forceReconnectVideo
+    forceReconnectVideo,
+    recordingState,
+    startRecording,
+    stopRecording
   };
   
   return (
@@ -1267,3 +1771,6 @@ export const VideoSessionProvider = ({ children }) => {
 export const useVideoSession = () => {
   return useContext(VideoSessionContext);
 };
+
+
+

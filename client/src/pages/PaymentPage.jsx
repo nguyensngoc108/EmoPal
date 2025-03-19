@@ -20,7 +20,7 @@ const PaymentPage = () => {
       try {
         setLoading(true);
         const response = await SessionService.getSessionById(sessionId);
-        console.log("Session details:", response.data);
+
         setSessionDetails(response.data.session);
         
         // If session price is not available, fetch therapist details to get hourly rate

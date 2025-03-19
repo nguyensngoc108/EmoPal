@@ -52,7 +52,7 @@ const MediaDetail = () => {
       try {
         setLoading(true);
         const response = await EmotionService.getAnalysisDetails(analysisId);
-        console.log("Analysis response:", response.data); // Add this line
+
         setAnalysis(response.data);
       } catch (err) {
         console.error("Error fetching analysis details:", err);
@@ -352,11 +352,10 @@ const MediaDetail = () => {
       </div>
     );
   }
-  // ...existing code...
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8 px-4">
-      <div className="container mx-auto max-w-6xl">
+    <div className="bg-gray-50 min-h-screen flex justify-center w-full">
+      <div className="w-full max-w-6xl px-4 py-8">
         {/* Header Section */}
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center">
           <div className="flex items-center">
@@ -387,32 +386,10 @@ const MediaDetail = () => {
           </div>
         </div>
 
+        {/* Tab Navigation and Content remains the same */}
         {/* Tab Navigation */}
         <div className="bg-white rounded-xl shadow-sm mb-6">
-          <div className="flex border-b border-gray-200">
-            <button
-              onClick={() => setActiveTab("emotions")}
-              className={`flex-1 py-4 px-6 text-center font-medium text-sm md:text-base transition-colors ${
-                activeTab === "emotions"
-                  ? "border-b-2 border-indigo-600 text-indigo-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <FaceSmileIcon className="h-5 w-5 inline mr-2" />
-              Emotion Analysis
-            </button>
-            <button
-              onClick={() => setActiveTab("data")}
-              className={`flex-1 py-4 px-6 text-center font-medium text-sm md:text-base transition-colors ${
-                activeTab === "data"
-                  ? "border-b-2 border-indigo-600 text-indigo-600"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <ChartBarIcon className="h-5 w-5 inline mr-2" />
-              Raw Data
-            </button>
-          </div>
+          {/* Tab navigation content */}
         </div>
 
         {/* Content based on active tab */}

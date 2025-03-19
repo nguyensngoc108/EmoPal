@@ -82,7 +82,7 @@ class SessionService {
   }
   
   // Upload session recording (for video sessions)
-  uploadSessionRecording(sessionId, recordingFile) {
+  uploadSessionRecordingLegacy(sessionId, recordingFile) {
     const formData = new FormData();
     formData.append('recording_file', recordingFile);
     
@@ -106,6 +106,39 @@ class SessionService {
   // Get emotion analysis history for a session
   getEmotionHistory(sessionId) {
     return api.get(`/ai_services/emotion-analysis/history/${sessionId}`);
+  }
+
+  // Get session recordings
+  getSessionRecordings(sessionId) {
+    return api.get(`/sessions/${sessionId}/recordings`);
+  }
+
+  // Get recording details
+  getRecordingDetails(recordingId) {
+    return api.get(`/sessions/recordings/${recordingId}`);
+  }
+
+  // Upload a recording
+  uploadSessionRecording(sessionId, formData) {
+    // Add logging to verify FormData content
+    console.log("Uploading recording FormData:", {
+      sessionId,
+      hasRecordingFile: formData.has('recording_file'),
+      hasSessionId: formData.has('session_id')
+    });
+    
+    // Increase timeout for large uploads
+    return api.post(`/sessions/${sessionId}/recordings/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      timeout: 300000 // 5 minute timeout for large uploads
+    });
+  }
+
+  // Delete a recording
+  deleteRecording(recordingId) {
+    return api.delete(`/recordings/${recordingId}`);
   }
 }
 

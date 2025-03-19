@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './Auth.css';
 
 const Register = () => {
   const fileInputRef = useRef(null);
+  const particlesContainerRef = useRef(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   
   const [formData, setFormData] = useState({
@@ -30,6 +31,63 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  const createParticles = () => {
+    const container = particlesContainerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    
+    // Create 15 particles
+    for (let i = 0; i < 15; i++) {
+      createParticle(container, containerRect);
+    }
+    
+    // Create new particles periodically
+    const interval = setInterval(() => {
+      createParticle(container, containerRect);
+    }, 800);
+    
+    return () => clearInterval(interval);
+  };
+  
+  const createParticle = (container, containerRect) => {
+    const particle = document.createElement('div');
+    particle.classList.add('particle');
+    
+    // Random size between 10px and 30px
+    const size = Math.random() * 20 + 10;
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+    
+    // Random position at bottom of container
+    const xPos = Math.random() * containerRect.width;
+    particle.style.left = `${xPos}px`;
+    particle.style.bottom = '0';
+    
+    // Random animation duration
+    const duration = Math.random() * 3 + 3; // 3-6 seconds
+    particle.style.animationDuration = `${duration}s`;
+    
+    // Random delay
+    const delay = Math.random() * 2;
+    particle.style.animationDelay = `${delay}s`;
+    
+    container.appendChild(particle);
+    
+    // Remove particle after animation completes
+    setTimeout(() => {
+      if (container.contains(particle)) {
+        container.removeChild(particle);
+      }
+    }, (duration + delay) * 1000);
+  };
+
+
+  useEffect(() => {
+    // Create particles animation
+    if (particlesContainerRef.current) {
+      createParticles();
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

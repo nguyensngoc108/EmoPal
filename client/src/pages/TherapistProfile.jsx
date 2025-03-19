@@ -45,7 +45,7 @@ const TherapistProfile = () => {
         setLoading(true);
         const response = await TherapistService.getTherapistProfile(id);
         setTherapist(response.data.therapist);
-        console.log(response.data.therapist);
+ 
         
         // Also fetch reviews
         const reviewsResponse = await TherapistService.getTherapistFeedback(id);
@@ -117,10 +117,7 @@ const TherapistProfile = () => {
       const endTime = new Date(startTime);
       endTime.setHours(endTime.getHours() + sessionDuration);
       
-      console.log("Selected date:", selectedDate);
-      console.log("Time from slot:", new Date(selectedTime));
-      console.log("Combined start time:", startTime);
-      console.log("End time:", endTime);
+
       
       // Create session data with properly combined date/time
       const sessionData = {
@@ -168,7 +165,7 @@ const TherapistProfile = () => {
         is_custom_request: true,
         notes: "Custom time requested by client"
       };
-      console.log(sessionData);
+
       
       const response = await SessionService.bookSession(sessionData);
       

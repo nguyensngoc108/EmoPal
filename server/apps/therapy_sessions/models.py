@@ -837,6 +837,30 @@ class TherapySession:
         
         return db.therapy_sessions.find_one({"_id": session_id})
 
+    @staticmethod
+    def add_recording(session_id, recording_data):
+        """Add a recording to the session's recordings array"""
+        if isinstance(session_id, str):
+            session_id = ObjectId(session_id)
+        
+        # Get existing session
+        session = db.therapy_sessions.find_one({"_id": session_id})
+        
+        # Initialize recordings array if it doesn't exist
+        if session and 'recordings' not in session:
+            db.therapy_sessions.update_one(
+                {"_id": session_id},
+                {"$set": {"recordings": []}}
+            )
+        
+        # Add the new recording to the array
+        result = db.therapy_sessions.update_one(
+            {"_id": session_id},
+            {"$push": {"recordings": recording_data}}
+        )
+        
+        return result.modified_count > 0
+
 # Add these additional enums
 class PlanType:
     TEXT_ONLY = "text_only"        # Just messaging

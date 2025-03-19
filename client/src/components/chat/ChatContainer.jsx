@@ -15,7 +15,7 @@ import LoadingSpinner from '../common/LoadingSpinner.jsx';
 // Add this function at the top of the file
 const logWithTimestamp = (message, data) => {
   const timestamp = new Date().toISOString().split('T')[1].substring(0, 12);
-  console.log(`[${timestamp}] ${message}`, data);
+
 };
 
 // Add this helper function at the appropriate scope
@@ -254,7 +254,7 @@ const ChatContainer = ({
         
         // Process any queued messages
         if (messageQueue.length > 0) {
-          console.log(`Sending ${messageQueue.length} queued messages`);
+
           messageQueue.forEach(msg => {
             if (socket.readyState === WebSocket.OPEN) {
               socket.send(JSON.stringify(msg));
@@ -290,7 +290,7 @@ const ChatContainer = ({
             }
             
             // Rest of the handler remains the same...
-            console.log(`Message ownership: sender=${data.sender_id}, user=${currentUserId}, isOwn=${isOwnMessage}`);
+           
             
             // Create a consistent message ID for deduplication
             // const messageId = data.message_id || `temp-${Date.now()}`;
@@ -354,11 +354,11 @@ const ChatContainer = ({
                   );
                   
                   if (hasMatchingMessage) {
-                    console.log("Found matching non-pending message, skipping");
+ 
                     return prevMessages;
                   }
                   
-                  console.log("No pending message found, adding new message");
+
                   const newMessage = {
                     id: messageId,
                     content: data.message,
@@ -397,7 +397,7 @@ const ChatContainer = ({
           } else if (data.type === 'message_history') {
               // Only process message history if we don't already have messages
             if (data.messages && Array.isArray(data.messages) && messages.length === 0) {
-              console.log("Processing message history:", data.messages.length);
+
               
               const formattedMessages = data.messages.map(msg => ({
                 id: msg._id || msg.id,
@@ -610,7 +610,7 @@ const ChatContainer = ({
       console.log(`Fetching messages for conversation: ${conversationId}`);
       const messagesResponse = await ChatService.getConversationMessages(conversationId, 1, PAGE_SIZE);
       if (messagesResponse?.data?.messages) {
-        console.log(`Found ${messagesResponse.data.messages.length} messages`);
+
         
         const standardizedMessages = messagesResponse.data.messages.map(msg => ({
           id: msg.id || msg._id,
@@ -653,12 +653,12 @@ const ChatContainer = ({
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
     
-    console.log("Initializing chat for the first time");
+
     initializeChat();
     
     // Cleanup function
     return () => {
-      console.log("Component unmounting, cleaning up");
+
       
       // Close WebSocket
       if (socketRef.current) {
@@ -683,12 +683,12 @@ const ChatContainer = ({
     if (hasInitializedRef.current || !conversationId) return;
     hasInitializedRef.current = true;
     
-    console.log("Initializing chat for conversation:", conversationId);
+
     initializeChat();
     
     // Cleanup function when unmounting or when conversationId changes
     return () => {
-      console.log("Cleaning up WebSocket and timers for:", conversationId);
+
       
       if (socketRef.current) {
         socketRef.current.close(1000, "Component unmounting or conversation changed");
@@ -707,7 +707,7 @@ const ChatContainer = ({
     
     // Return cleanup function
     return () => {
-      console.log("Component unmounting, cleaning up WebSocket");
+
       isMountedRef.current = false;
       
       // Close WebSocket

@@ -244,9 +244,63 @@ def upload_and_analyze(request):
                     "resource_type": "video"
                 }
                 
-                # Run video analysis - don't set max_duration to keep full video length
-                sample_rate = 1.0 if duration < 30 else 0.5 if duration < 120 else 0.2
-                analysis_results = analyze_video(temp_path, sample_rate=sample_rate)
+                # CRITICAL FIX: Add more robust error handling for video analysis
+                try:
+                    # Run video analysis with improved parameters for WebM compatibility
+                    sample_rate = 1.0  # Use higher sample rate for problematic videos
+                    analysis_results = analyze_video(temp_path, sample_rate=sample_rate)
+                    
+                    # If analysis fails with no frames, try again with different method
+                    if analysis_results.get("error") == "No frames could be extracted from video":
+                        logger.warning("First analysis attempt failed, retrying with alternative method")
+                        # Try creating a temporary copy with a different container format
+                        with tempfile.NamedTemporaryFile(suffix='.mp4', delete=False) as temp_mp4:
+                            temp_mp4_path = temp_mp4.name
+                        
+                        # Convert WebM to MP4 using FFmpeg
+                        try:
+                            subprocess.run([
+                                'ffmpeg', '-i', temp_path, '-c:v', 'libx264', '-crf', '23',
+                                '-preset', 'veryfast', '-c:a', 'aac', temp_mp4_path
+                            ], check=True, capture_output=True)
+                            
+                            # Try analysis again with converted file
+                            analysis_results = analyze_video(temp_mp4_path, sample_rate=sample_rate)
+                            
+                            # Clean up temporary file
+                            try:
+                                os.unlink(temp_mp4_path)
+                            except:
+                                pass
+                        except Exception as conv_err:
+                            logger.error(f"Conversion failed: {str(conv_err)}")
+                            # Continue with original error results
+                    
+                    # If still failing, create minimal analysis results
+                    if analysis_results.get("error"):
+                        logger.warning(f"Video analysis failed: {analysis_results.get('error')}")
+                        analysis_results = {
+                            "error": analysis_results.get("error"),
+                            "overall": {
+                                "dominant_emotion": "unknown",
+                                "avg_valence": 0,
+                                "avg_engagement": 0
+                            },
+                            "face_count": 0,
+                            "face_detected": False
+                        }
+                except Exception as analysis_error:
+                    logger.error(f"Error during video analysis: {str(analysis_error)}")
+                    analysis_results = {
+                        "error": f"Analysis error: {str(analysis_error)}",
+                        "overall": {
+                            "dominant_emotion": "unknown",
+                            "avg_valence": 0,
+                            "avg_engagement": 0
+                        },
+                        "face_count": 0,
+                        "face_detected": False
+                    }
                 
                 # Check if we have an annotated video
                 if not analysis_results.get("annotated_video_path"):
@@ -572,5 +626,5 @@ def delete_analysis(request, analysis_id):
     except Exception as e:
         logger.error(f"Error in delete_analysis: {str(e)}")
         return JsonResponse({"error": f"Failed to delete analysis: {str(e)}"}, status=500)
-    
-    
+
+

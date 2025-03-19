@@ -92,9 +92,9 @@ const MessageList = ({ messages, currentUserId, conversationType }) => {
   // Debug any messages that still appear on the wrong side
   useEffect(() => {
     if (messages.length > 0) {
-      // console.log("Messages ownership check:");
+
       messages.forEach(msg => {
-        // console.log(`Message ${msg.id?.substring(0,6)}: sender=${msg.sender_id}, currentUser=${currentUserId}, isOwn=${msg.sender_id === currentUserId}`);
+      
       });
     }
   }, [messages, currentUserId]);

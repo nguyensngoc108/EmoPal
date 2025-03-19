@@ -1,0 +1,143 @@
+/* Sentiment indicators */
+.sentiment-very-positive {
+  color: #2e7d32;
+}
+
+.sentiment-positive {
+  color: #4caf50;
+}
+
+.sentiment-neutral {
+  color: #9e9e9e;
+}
+
+.sentiment-negative {
+  color: #f44336;
+}
+
+.sentiment-very-negative {
+  color: #b71c1c;
+}
+
+/* Timeline styles */
+.emotion-changes-container {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.emotion-changes-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.emotion-changes-container::-webkit-scrollbar-track {
+  background: #f7fafc;
+}
+
+.emotion-changes-container::-webkit-scrollbar-thumb {
+  background-color: #cbd5e0;
+  border-radius: 6px;
+}
+
+/* Timeline marker styling */
+.timeline-marker {
+  height: 16px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.timeline-marker:hover {
+  transform: scaleY(1.5);
+}
+
+/* Video player styles */
+.video-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.video-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Recording notification */
+.recording-notification {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #4f46e5;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  transition: opacity 0.5s;
+}
+
+.recording-notification-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recording-notification-progress {
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.5);
+  width: 100%;
+  position: relative;
+}
+
+.recording-notification.fade-out {
+  opacity: 0;
+}
+
+.recording-notification-progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: white;
+  animation: progress 5s linear forwards;
+}
+
+@keyframes progress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+/* Recording specific styles */
+.recording-note {
+  border-left: 3px solid #4f46e5;
+}
+
+/* Emotion markers */
+.emotion-marker {
+  position: absolute;
+  width: 4px;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.emotion-marker:hover {
+  transform: scaleX(3);
+  opacity: 0.9;
+}

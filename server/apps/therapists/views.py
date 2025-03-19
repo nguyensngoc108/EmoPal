@@ -352,57 +352,73 @@ def list_therapists(request):
         # Extract pagination parameters
         limit = int(request.GET.get("limit", 10))
         skip = int(request.GET.get("skip", 0))
-        recommended = request.GET.get("recommended", "").lower() == "true"
         
-        # Get all verified therapists
-        therapists = Therapist.get_all_therapists(limit=limit*2, skip=skip)  # Get more to allow for filtering
+        # Extract filter parameters
+        gender = request.GET.get("gender")
+        languages = request.GET.get("languages", "").split(",") if request.GET.get("languages") else []
+        specialization = request.GET.get("specialization")
+        approach = request.GET.get("approach")
+        min_price = float(request.GET.get("minPrice", 0))
+        max_price = float(request.GET.get("maxPrice", 1000))
+        query = request.GET.get("query", "")
         
-        # For each therapist, get user details to show name, etc.
+        # Build filter query
+        filter_query = {"is_verified": True}
+        
+        if query:
+            # Add text search
+            filter_query["$text"] = {"$search": query}
+        
+        # Get all verified therapists with filters
+        therapists = []
+        
+        # Need to query both the therapist and user collections to apply all filters
+        all_therapists = list(therapists_collection.find(filter_query).skip(skip).limit(limit))
+        
+        # Apply post-query filters and join with user data
         result = []
-        for therapist in therapists:
+        for therapist in all_therapists:
             # Convert ObjectId to string for JSON serialization
             therapist = convert_object_ids(therapist)
             
-            # Get basic user info
+            # Get user data and apply gender filter
             user_info = User.find_by_id(therapist["user_id"])
-            if user_info:
-                therapist["name"] = user_info.get("username")
-                therapist["gender"] = user_info.get("gender")
-                therapist["profile_picture"] = user_info.get("profile_picture")
-                # Apply Cloudinary transformation for consistent image sizing
-                if therapist["profile_picture"] and "cloudinary" in therapist["profile_picture"] and "/upload/" in therapist["profile_picture"]:
-                    therapist["profile_picture"] = therapist["profile_picture"].replace('/upload/', '/upload/c_fill,g_face,h_225,w_225/')
+            if not user_info:
+                continue
                 
+            # Apply gender filter
+            if gender and gender != 'no_preference' and user_info.get("gender") != gender:
+                continue
+                
+            # Apply language filter
+            if languages and not any(lang.lower() in [l.lower() for l in therapist.get("languages", ["English"])]):
+                continue
+                
+            # Apply price filter
+            if therapist.get("hourly_rate", 0) < min_price or therapist.get("hourly_rate", 1000) > max_price:
+                continue
+                
+            # Add user info to therapist data
+            therapist["name"] = user_info.get("username")
+            therapist["gender"] = user_info.get("gender")
+            therapist["profile_picture"] = user_info.get("profile_picture")
+            therapist["bio"] = user_info.get("bio", "")
+            
+            # Apply Cloudinary transformation for consistent image sizing
+            if therapist["profile_picture"] and "cloudinary" in therapist["profile_picture"] and "/upload/" in therapist["profile_picture"]:
+                therapist["profile_picture"] = therapist["profile_picture"].replace('/upload/', '/upload/c_fill,g_face,h_225,w_225/')
+            
             result.append(therapist)
         
-        # If recommended=true, apply recommendation logic
-        if recommended:
-            # First, try to use user preferences if available
-            user_preferences = None
-            if current_user and "preferences" in current_user:
-                user_preferences = current_user.get("preferences", {})
-            
-            if user_preferences and "topics_of_interest" in user_preferences and user_preferences["topics_of_interest"]:
-                # Filter by user's topics of interest
-                topics = user_preferences["topics_of_interest"]
-                filtered_results = [t for t in result if 
-                                  any(topic in (t.get("specialization", []) + t.get("focus_areas", [])) 
-                                      for topic in topics)]
-                
-                # If we found matches, use them; otherwise fall back to rating-based sorting
-                if filtered_results:
-                    result = filtered_results
-            
-            # Sort by rating (highest first)
-            result.sort(key=lambda t: t.get("rating", 0), reverse=True)
-            
-            # Limit results to requested amount
-            result = result[:limit]
+        # Get total count for pagination
+        total_count = therapists_collection.count_documents(filter_query)
         
         return JsonResponse({
             "success": True,
             "count": len(result),
-            "therapists": result
+            "total": total_count,
+            "therapists": result,
+            "has_more": skip + len(result) < total_count
         })
         
     except Exception as e:

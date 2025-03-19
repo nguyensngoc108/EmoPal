@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script to add therapist_id field to user documents for users who are therapists.
-This creates a bidirectional relationship between the users and therapists collections.
+Script to reset passwords for all therapist accounts to a common value.
+This is for development/testing purposes only.
 """
 
 import os
@@ -13,117 +13,130 @@ sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 
 from database import db
 from bson.objectid import ObjectId
+from werkzeug.security import generate_password_hash
 
 # Get collections
 users_collection = db["users"]
-therapists_collection = db["therapists"]
 
-def update_users_with_therapist_ids():
+def reset_therapist_passwords(new_password="therapisttest123"):
     """
-    Find all therapists, then update their corresponding user documents 
-    with a therapist_id field referencing the therapist document.
+    Reset password for all users with role='therapist' to the specified value
     """
-    print("Starting update of user documents with therapist_id...")
+    print(f"Starting password reset for all therapist accounts...")
     
-    # Get all therapists
-    therapists = list(therapists_collection.find({}, {"_id": 1, "user_id": 1}))
-    print(f"Found {len(therapists)} therapist documents")
+    # Find all users with therapist role
+    therapist_users = list(users_collection.find({"role": "therapist"}))
+    print(f"Found {len(therapist_users)} therapist user accounts")
     
     updated_count = 0
     error_count = 0
     
-    for therapist in therapists:
-        therapist_id = therapist["_id"]
-        user_id = therapist["user_id"]
+    for user in therapist_users:
+        user_id = user["_id"]
+        email = user.get("email")
+        username = user.get("username")
         
         try:
-            # Make sure user_id is an ObjectId
-            if not isinstance(user_id, ObjectId):
-                user_id = ObjectId(user_id)
+            # Generate password hash using werkzeug's scrypt method
+            # CRITICAL FIX: Make sure this matches exactly how passwords are created in your User model
+            hashed_password = generate_password_hash(new_password, method='scrypt')
             
-            # Update the user document with therapist_id
+            # Debug output to verify hash format
+            print(f"Generated hash: {hashed_password}")
+            
+            # Update the user document with the new password
             result = users_collection.update_one(
                 {"_id": user_id},
                 {
                     "$set": {
-                        "therapist_id": therapist_id,
-                        "role": "therapist",  # Ensure role is set correctly
+                        "password": hashed_password,
                         "updated_at": datetime.utcnow()
                     }
                 }
             )
             
-            if result.matched_count == 0:
-                print(f"Warning: No user found with _id: {user_id}")
-                error_count += 1
-            elif result.modified_count == 1:
+            # Verify update
+            updated_user = users_collection.find_one({"_id": user_id})
+            print(f"Stored hash: {updated_user.get('password')[:30]}...")
+            
+            if result.modified_count == 1:
                 updated_count += 1
-                print(f"Updated user {user_id} with therapist_id {therapist_id}")
+                print(f"Updated password for {username} ({email})")
             else:
-                print(f"User {user_id} already has therapist_id set")
-        
+                print(f"No change for {username} ({email})")
+            
         except Exception as e:
-            print(f"Error updating user {user_id}: {str(e)}")
+            print(f"Error updating password for {username} ({email}): {str(e)}")
             error_count += 1
     
-    print(f"Update completed: {updated_count} users updated, {error_count} errors")
+    print(f"\nPassword reset completed:")
+    print(f"- {updated_count} passwords updated")
+    print(f"- {error_count} errors encountered")
+    print(f"\nPassword format example: {generate_password_hash('example', method='scrypt')}")
     return updated_count, error_count
 
-def verify_bidirectional_relationships():
+def verify_therapist_accounts():
     """
-    Verify that all therapists have a corresponding user with therapist_id
-    and all users with therapist_id have a corresponding therapist.
+    Verify therapist accounts after password reset
     """
-    print("\nVerifying bidirectional relationships...")
+    therapist_count = users_collection.count_documents({"role": "therapist"})
+    print(f"\nVerification: Found {therapist_count} therapist accounts in database")
     
-    # Check users with therapist_id
-    users_with_therapist_id = list(users_collection.find(
-        {"therapist_id": {"$exists": True}},
-        {"_id": 1, "therapist_id": 1, "username": 1}
-    ))
-    print(f"Found {len(users_with_therapist_id)} users with therapist_id field")
+    if therapist_count == 0:
+        print("Warning: No therapist accounts found. Check if role field is set correctly.")
     
-    # Check therapists
-    therapist_count = therapists_collection.count_documents({})
-    print(f"Total therapists in database: {therapist_count}")
+    # List first 5 therapist accounts for verification
+    print("\nSample therapist accounts:")
+    for user in users_collection.find({"role": "therapist"}).limit(5):
+        print(f"- {user.get('username')} ({user.get('email')})")
+        # Show password format but not the full hash for security
+        password = user.get('password', '')
+        if password:
+            print(f"  Password format: {password[:30]}...")
+
+def test_password_verification():
+    """Test if the password verification works correctly"""
+    print("\n=== Testing Password Verification ===")
     
-    # Check for users with invalid therapist_id
-    invalid_count = 0
-    for user in users_with_therapist_id:
-        therapist_id = user["therapist_id"]
-        therapist = therapists_collection.find_one({"_id": therapist_id})
-        
-        if not therapist:
-            print(f"Warning: User {user['_id']} has invalid therapist_id {therapist_id}")
-            invalid_count += 1
+    # Get a therapist user
+    therapist = users_collection.find_one({"role": "therapist"})
+    if not therapist:
+        print("No therapist found to test")
+        return
     
-    if invalid_count == 0:
-        print("All user therapist_id references are valid")
+    email = therapist.get("email")
+    username = therapist.get("username")
+    stored_hash = therapist.get("password")
+    
+    print(f"Testing login for: {username} ({email})")
+    print(f"Stored password hash: {stored_hash[:30]}...")
+    
+    # Test with the reset password
+    test_password = "therapisttest123"
+    from werkzeug.security import check_password_hash
+    
+    # Verify using werkzeug's function
+    is_valid = check_password_hash(stored_hash, test_password)
+    print(f"Password verification result: {is_valid}")
+    
+    if not is_valid:
+        print("ERROR: Password verification failed!")
+        print("This indicates that either:")
+        print("1. The password hash format doesn't match what check_password_hash expects")
+        print("2. The password wasn't correctly updated in the database")
     else:
-        print(f"Found {invalid_count} users with invalid therapist_id references")
-    
-    # Check for therapists without corresponding user therapist_id
-    missing_count = 0
-    for therapist in therapists_collection.find({}, {"_id": 1, "user_id": 1}):
-        user = users_collection.find_one({
-            "_id": therapist["user_id"], 
-            "therapist_id": therapist["_id"]
-        })
-        
-        if not user:
-            print(f"Warning: Therapist {therapist['_id']} not referenced by user {therapist['user_id']}")
-            missing_count += 1
-    
-    if missing_count == 0:
-        print("All therapists are properly referenced by users")
-    else:
-        print(f"Found {missing_count} therapists not properly referenced by users")
+        print("Password verification successful!")
 
 if __name__ == "__main__":
-    print("=== User-Therapist Bidirectional Relationship Update ===")
-    update_count, error_count = update_users_with_therapist_ids()
+    print("=== Therapist Account Password Reset ===")
+    print("WARNING: This will reset ALL therapist passwords!")
+    confirm = input("Type 'YES' to continue or anything else to cancel: ")
     
-    if update_count > 0 or error_count > 0:
-        verify_bidirectional_relationships()
-    
-    print("Script completed")
+    if confirm.upper() == "YES":
+        updated, errors = reset_therapist_passwords()
+        if updated > 0:
+            verify_therapist_accounts()
+            test_password_verification()  # Add this line
+        print("\nNew password for all therapist accounts: therapisttest123")
+    else:
+        print("Operation cancelled.")

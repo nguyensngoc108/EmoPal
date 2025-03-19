@@ -1,242 +1,683 @@
+html {
+  overflow-y: scroll; /* Force scrollbar to always be present */
+}
+
+/* Animated background */
 .auth-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 150px);
-    padding: 20px;
-    background: #f9fafb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 150px);
+  padding: 20px;
+  margin: 0 auto; /* Ensure container is centered */
+  box-sizing: border-box; /* Ensure padding is included in width calculations */
+  width: 100%; /* Take full width of parent */
+  position: relative;
+  background: linear-gradient(135deg, #f9fafb 0%, #eef1f5 100%);
+  overflow: hidden;
+}
+
+/* Animated floating shapes in background */
+.auth-container::before,
+.auth-container::after {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: rgba(79, 112, 232, 0.05);
+  animation: float 15s infinite ease-in-out;
+}
+
+.auth-container::before {
+  top: -150px;
+  right: -100px;
+  animation-delay: 0s;
+}
+
+.auth-container::after {
+  bottom: -150px;
+  left: -100px;
+  width: 250px;
+  height: 250px;
+  animation-delay: -7s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
   }
-  
+  50% {
+    transform: translateY(-30px) scale(1.05);
+  }
+}
+
+/* Card animation and styling */
+.auth-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+  margin: 0 auto; /* Add this to ensure card is centered */
+  position: relative; /* Add this for better position control */
+  left: 0; /* Reset any potential left offset */
+  transform: translateX(0); /* Ensure no transform is affecting position */
+  animation: cardAppear 0.7s ease-out forwards;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+@keyframes cardAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tab styling with animated indicator */
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid #eaeaea;
+  background-color: #f8f9fa;
+  position: relative;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 18px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #777;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-tab.active {
+  font-weight: 600;
+  color: #4f70e8;
+}
+
+.auth-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background-color: #4f70e8;
+  animation: tabIndicator 0.3s forwards ease-out;
+}
+
+@keyframes tabIndicator {
+  to {
+    left: 15%;
+    width: 70%;
+  }
+}
+
+.auth-tab:hover:not(.active) {
+  background-color: rgba(79, 112, 232, 0.05);
+}
+
+/* Content area styling */
+.auth-content {
+  padding: 30px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.auth-subtitle {
+  color: #777;
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #e1e4e8;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s;
+  background-color: #fafbfc;
+}
+
+.form-group input:focus {
+  border-color: #4f70e8;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 112, 232, 0.2);
+  background-color: #fff;
+}
+
+/* FIXED: Button styling - now prominently colored by default */
+.auth-button {
+  width: 100%;
+  padding: 16px;
+  background: #4361ee; /* Vibrant blue */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.auth-button:hover {
+  background: #3a56d4; /* Darker blue on hover */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(67, 97, 238, 0.4);
+}
+
+.auth-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(79, 112, 232, 0.4);
+}
+
+.auth-button:disabled {
+  background: #a1aeeb;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Button ripple effect */
+.auth-button::after {
+  content: "";
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: all 0.6s;
+}
+
+.auth-button:active::after {
+  transform: translate(-50%, -50%) scale(3);
+  opacity: 0;
+  transition: 0s;
+}
+
+/* Error message styling with animation */
+.auth-error {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border-left: 4px solid #dc2626;
+  animation: shakeError 0.6s;
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.auth-footer {
+  margin-top: 30px;
+  text-align: center;
+  animation: fadeIn 0.8s ease-out;
+  animation-delay: 0.2s;
+  animation-fill-mode: both;
+}
+
+.auth-links {
+  margin-bottom: 16px;
+}
+
+.auth-links a {
+  color: #4f70e8;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.auth-links a:hover {
+  color: #3a5ad9;
+  text-decoration: underline;
+}
+
+.auth-register {
+  color: #555;
+  margin-top: 8px;
+}
+
+.auth-register a {
+  color: #4f70e8;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.auth-register a:hover {
+  color: #3a5ad9;
+  text-decoration: underline;
+}
+
+/* Avatar upload with animations */
+.avatar-upload-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.avatar-upload {
+  width: 130px;
+  height: 130px;
+  border-radius: 65px;
+  background-color: #f0f2f5;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  border: 2px dashed #ccd0d5;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.avatar-upload:hover {
+  border-color: #4f70e8;
+  background-color: #f5f7ff;
+  transform: scale(1.03);
+}
+
+.avatar-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #65676b;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.upload-icon {
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #4f70e8;
+}
+
+.remove-avatar-btn {
+  background: none;
+  border: none;
+  color: #4f70e8;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.remove-avatar-btn:hover {
+  background-color: #f5f7ff;
+  text-decoration: underline;
+}
+
+/* Form rows */
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* Address section */
+.address-section {
+  margin: 24px 0;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  animation: fadeIn 0.5s ease-out;
+  animation-delay: 0.1s;
+  animation-fill-mode: both;
+}
+
+.address-section h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 18px;
+  color: #333;
+  position: relative;
+  padding-left: 18px;
+}
+
+.address-section h3::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 18px;
+  background-color: #4f70e8;
+  border-radius: 4px;
+}
+
+/* Form textarea */
+.form-group textarea {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #e1e4e8;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s;
+  resize: vertical;
+  font-family: inherit;
+  background-color: #fafbfc;
+  min-height: 100px;
+}
+
+.form-group textarea:focus {
+  border-color: #4f70e8;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 112, 232, 0.2);
+  background-color: #fff;
+}
+
+/* Select input styling */
+select {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #e1e4e8;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s;
+  background-color: #fafbfc;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  cursor: pointer;
+}
+
+select:focus {
+  border-color: #4f70e8;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 112, 232, 0.2);
+  background-color: #fff;
+}
+
+/* Loading animation for button */
+.auth-button .loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: rotate 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .auth-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    width: 100%;
-    max-width: 500px;
-    overflow: hidden;
-  }
-  
-  .auth-tabs {
-    display: flex;
-    border-bottom: 1px solid #eaeaea;
-  }
-  
-  .auth-tab {
-    flex: 1;
-    padding: 15px;
-    background: none;
-    border: none;
-    font-size: 16px;
-    color: #777;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-  
-  .auth-tab.active {
-    font-weight: 600;
-    color: #4f70e8;
-    box-shadow: inset 0 -3px 0 #4f70e8;
+    max-width: 100%;
   }
   
   .auth-content {
-    padding: 30px;
+    padding: 20px;
   }
   
-  h2 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #333;
-    font-size: 24px;
-  }
-  
-  .auth-subtitle {
-    color: #777;
-    margin-bottom: 25px;
-  }
-  
-  .form-group {
-    margin-bottom: 20px;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: #333;
-  }
-  
-  .form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 16px;
-    transition: border 0.3s;
-  }
-  
-  .form-group input:focus {
-    border-color: #4f70e8;
-    outline: none;
-  }
-  
-  .auth-button {
-    width: 100%;
-    padding: 14px;
-    background: #4f70e8;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  .auth-button:hover {
-    background: #3a5ad9;
-  }
-  
-  .auth-button:disabled {
-    background: #a1aeeb;
-    cursor: not-allowed;
-  }
-  
-  .auth-error {
-    background: #fee2e2;
-    color: #dc2626;
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-  }
-  
-  .auth-footer {
-    margin-top: 25px;
-    text-align: center;
-  }
-  
-  .auth-links {
-    margin-bottom: 15px;
-  }
-  
-  .auth-links a {
-    color: #4f70e8;
-    text-decoration: none;
-  }
-  
-  .auth-links a:hover {
-    text-decoration: underline;
-  }
-  
-  .auth-register {
-    color: #555;
-  }
-  
-  .auth-register a {
-    color: #4f70e8;
-    font-weight: 600;
-    text-decoration: none;
-  }
-  
-  .auth-register a:hover {
-    text-decoration: underline;
-  }
-
-
-  /* Add these styles to your existing Auth.css file */
-
-/* Avatar upload styles */
-.avatar-upload-section {
-    display: flex;
+  .form-row {
     flex-direction: column;
-    align-items: center;
-    margin-bottom: 25px;
+    gap: 0;
   }
   
   .avatar-upload {
-    width: 120px;
-    height: 120px;
-    border-radius: 60px;
-    background-color: #f0f2f5;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 10px;
-    overflow: hidden;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    border: 2px dashed #ccd0d5;
-    transition: all 0.3s ease;
+    width: 110px;
+    height: 110px;
   }
-  
-  .avatar-upload:hover {
-    border-color: #4f70e8;
-    background-color: #f5f7ff;
+}
+
+/* Input focus effect */
+.form-group input:focus ~ label,
+.form-group textarea:focus ~ label {
+  color: #4f70e8;
+}
+
+/* Input focus highlight animation */
+.form-group input:focus,
+.form-group textarea:focus,
+select:focus {
+  animation: highlightBorder 0.3s ease-out;
+}
+
+@keyframes highlightBorder {
+  0% { box-shadow: 0 0 0 0 rgba(79, 112, 232, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(79, 112, 232, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(79, 112, 232, 0); }
+}
+
+/* Animated particles in background */
+.auth-container {
+  position: relative;
+}
+
+.particles-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(79, 112, 232, 0.2);
+  pointer-events: none;
+  opacity: 0;
+  animation: particleAnimation 6s ease-in-out infinite;
+}
+
+@keyframes particleAnimation {
+  0% {
+    transform: translateY(0) scale(0);
+    opacity: 0;
   }
-  
-  .avatar-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #65676b;
+  20% {
+    opacity: 0.6;
   }
-  
-  .upload-icon {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 5px;
+  80% {
+    opacity: 0.6;
   }
-  
-  .remove-avatar-btn {
-    background: none;
-    border: none;
-    color: #4f70e8;
-    font-size: 14px;
-    cursor: pointer;
-    padding: 5px;
+  100% {
+    transform: translateY(-300px) scale(1);
+    opacity: 0;
   }
-  
-  .remove-avatar-btn:hover {
-    text-decoration: underline;
+}
+
+/* Input field enhancements */
+.form-group input,
+.form-group textarea,
+.form-group select {
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(79, 112, 232, 0.15);
+}
+
+/* Button pulsate effect */
+@keyframes buttonPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 112, 232, 0.7);
   }
-  
-  /* Address section styles */
-  .address-section {
-    margin: 20px 0;
-    padding: 15px;
-    background: #f9fafb;
-    border-radius: 8px;
+  70% {
+    box-shadow: 0 0 0 10px rgba(79, 112, 232, 0);
   }
-  
-  .address-section h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 18px;
-    color: #333;
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 112, 232, 0);
   }
-  
-  /* Form textarea styles */
-  .form-group textarea {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 16px;
-    transition: border 0.3s;
-    resize: vertical;
-    font-family: inherit;
+}
+
+.auth-button:not(:disabled) {
+  animation: buttonPulse 2s infinite;
+}
+
+/* Loading spinner improvement */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spinner 1s cubic-bezier(0.76, 0.16, 0.24, 0.84) infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
   }
-  
-  .form-group textarea:focus {
-    border-color: #4f70e8;
-    outline: none;
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .avatar-upload {
-      width: 100px;
-      height: 100px;
-    }
-  }
+}
+
+/* Form field animation */
+.form-group {
+  position: relative;
+  overflow: hidden;
+}
+
+.form-group::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #4f70e8, #8293ff, #4f70e8);
+  transform: translateX(-100%);
+  transition: transform 0.5s;
+}
+
+.form-group:focus-within::after {
+  transform: translateX(0);
+}
+
+/* Enhanced avatar upload animation */
+.avatar-upload:hover .avatar-placeholder {
+  transform: translateY(-5px);
+}
+
+.avatar-upload:active .avatar-placeholder {
+  transform: scale(0.95);
+}
+
+.avatar-upload::before {
+  content: '';
+  position: absolute;
+  top: -75%;
+  left: -75%;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+  transform: rotate(45deg);
+  transition: all 0.5s ease-in-out;
+  opacity: 0;
+}
+
+.avatar-upload:hover::before {
+  top: -25%;
+  left: -25%;
+  opacity: 1;
+}
+
+/* Add 3D effect to the card */
+.auth-card {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  transition: transform 0.5s;
+}
+
+.auth-card:hover {
+  transform: translateY(-5px) rotateX(2deg) rotateY(-2deg);
+}
+
+/* Form field label animation */
+.form-group label {
+  display: block;
+  transform-origin: left;
+  transition: transform 0.3s, color 0.3s;
+}
+
+.form-group input:focus + label,
+.form-group textarea:focus + label,
+.form-group select:focus + label {
+  transform: translateY(-5px) scale(0.9);
+  color: #4361ee;
+}

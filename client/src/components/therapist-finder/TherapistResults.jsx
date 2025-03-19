@@ -40,29 +40,41 @@ const TherapistResults = ({ filters, skipWizard = false }) => {
       setError(null);
 
       // Build API parameters from filters
-      const params = { page: pageNum, limit: 10 };
+      const params = { 
+        page: pageNum, 
+        limit: 10,
+        skip: (pageNum - 1) * 10  // Add skip parameter for proper pagination
+      };
       
-      if (!skipWizard) {
-        if (filters.serviceType) params.serviceType = filters.serviceType;
-        if (filters.helpReason) params.specialization = filters.helpReason;
-        if (filters.preferredGender) params.gender = filters.preferredGender;
-        if (filters.preferredLanguages?.length) params.language = filters.preferredLanguages;
-        if (filters.preferredApproach) params.approach = filters.preferredApproach;
-        if (filters.priceRange) {
-          params.minPrice = filters.priceRange[0];
-          params.maxPrice = filters.priceRange[1];
+      // Apply all active filters to the API request
+      Object.keys(activeFilters).forEach(key => {
+        if (activeFilters[key]) {
+          if (key === 'priceRange') {
+            params.minPrice = activeFilters[key][0];
+            params.maxPrice = activeFilters[key][1];
+          } else if (key === 'preferredLanguages' && activeFilters[key].length) {
+            params.languages = activeFilters[key].join(',');
+          } else if (key === 'preferredGender' && activeFilters[key] !== 'no_preference') {
+            params.gender = activeFilters[key];
+          } else if (key === 'preferredApproach' && activeFilters[key] !== 'no_preference') {
+            params.approach = activeFilters[key];
+          } else if (activeFilters[key]) {
+            params[key] = activeFilters[key];
+          }
         }
-      }
+      });
 
       const response = await TherapistService.getTherapists(params);
       
       if (pageNum === 1) {
-        setTherapists(response.data.therapists);
+        setTherapists(response.data.therapists || []);
       } else {
-        setTherapists(prev => [...prev, ...response.data.therapists]);
+        // Append new results to existing therapists
+        setTherapists(prev => [...prev, ...(response.data.therapists || [])]);
       }
       
-      setHasMore(response.data.has_more || false);
+      // Check if there are more results to load
+      setHasMore(response.data.therapists?.length === 10);
       setPage(pageNum);
     } catch (err) {
       console.error("Error fetching therapists:", err);

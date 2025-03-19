@@ -39,7 +39,7 @@ const MediaAnalysis = () => {
     try {
       setLoading(true);
       const response = await EmotionService.getUserAnalyses();
-      console.log('Analysis response:', response.data); // Add this line
+
       setAnalyses(response.data.analyses || []);
     } catch (err) {
       setError('Failed to load your previous analyses');
@@ -202,11 +202,11 @@ const MediaAnalysis = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8 px-4">
-      <div className="container mx-auto max-w-6xl">
+    <div className="bg-gray-50 min-h-screen flex justify-center w-full">
+      <div className="w-full max-w-6xl px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Media Emotion Analysis</h1>
+            <h1 className="text-3xl font-bold text-gray-800 page-header">Media Emotion Analysis</h1>
             <p className="text-gray-600 mt-2">
               Upload images or videos to analyze emotions
             </p>
@@ -214,13 +214,13 @@ const MediaAnalysis = () => {
         </div>
 
         {/* Upload Section */}
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8 upload-card">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Upload Media</h2>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             {!file ? (
               <div 
-                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center cursor-pointer hover:bg-gray-50 transition-colors upload-dropzone"
                 onClick={() => document.getElementById('file-upload').click()}
               >
                 <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -298,9 +298,9 @@ const MediaAnalysis = () => {
                 </span>
                 <span>{uploadProgress}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="w-full bg-gray-200 rounded-full h-2.5 progress-bar-container">
                 <div 
-                    className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300" 
+                    className="bg-indigo-600 h-2.5 rounded-full transition-all duration-300 progress-bar" 
                     style={{ width: `${uploadProgress}%` }}
                 ></div>
                 </div>
@@ -329,7 +329,7 @@ const MediaAnalysis = () => {
         </div>
 
         {/* Previous Analyses */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="bg-white rounded-xl shadow-sm p-6 analyses-card">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Analyses</h2>
           
           {loading ? (
@@ -349,13 +349,13 @@ const MediaAnalysis = () => {
               <p className="mt-2 text-sm">Upload a file to get started</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 analysis-grid">
               {analyses.map((analysis) => (
                 <motion.div 
                   key={analysis.analysis_id}
                   whileHover={{ y: -5 }}
                   transition={{ duration: 0.2 }}
-                  className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
+                  className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 analysis-item"
                 >
                   <Link to={`/media-analysis/${analysis.analysis_id}`}>
                     <div className="h-48 bg-gray-200 overflow-hidden">
